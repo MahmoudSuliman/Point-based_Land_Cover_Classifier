@@ -192,12 +192,20 @@ data = rasterio.open(fp)
 # creating a colormap
 
 colors = ['darkgreen', 'forestgreen', 'honeydew', 'lightgray']  # R -> G -> B
-n_bins = [3, 6, 10, 100]  # Discretizes the interpolation into bins
+n_bins = [1, 2, 3, 4]  # Discretizes the interpolation into bins
 cmap_name = 'my_list'
 for n_bin, ax in zip(n_bins, axs.ravel()):
     cm = LinearSegmentedColormap.from_list(cmap_name, colors, N=n_bin)
 
 # plotting the data
-show(data, cmap=cm)
+fig, ax = plt.subplots(figsize=(10,8))
+image_hidden = ax.imshow(data.read()[0], cmap=cm)
+cbar= fig.colorbar(image_hidden, ax=ax, ticks=[2.375,3.15,3.875,4.65])
+cbar.ax.yaxis.set_tick_params(width=0)
+cbar.ax.set_yticklabels(['Heavy vegetation \nand water bodies', 
+                         'Intermediate Vegetation', 'light to no Vegetation',
+                         'Urban Areas'], fontsize=16, weight='bold')  # vertically oriented colorbar
+show(data, ax=ax, cmap=cm)
+
 
 # =============================================================================
