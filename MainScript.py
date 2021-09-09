@@ -13,10 +13,12 @@ os.chdir(r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_
 import matplotlib.image as img
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.ticker import ScalarFormatter
 import numpy as np
 import pandas as pd
 import glob
 import PIL
+from PIL import Image, ImageDraw
 
 import rasterio
 from rasterio.plot import show
@@ -80,6 +82,8 @@ out_meta.update({"driver": "GTiff", "height": mosaic.shape[1],
 # Write the mosaic RasterIO to disk
 with rasterio.open(out_fp, "w", **out_meta) as dest:
     dest.write(mosaic)
+
+
 # =============================================================================
 # Clipping
 
@@ -173,7 +177,7 @@ lista[np.where((105 < lista) & (lista <= 200)) ] = 4
 lista[np.where( lista > 200 )] = 5
 
 # create new file
-file2 = driver.Create( 'Classified2.tif', file.RasterXSize , file.RasterYSize , 1)
+file2 = driver.Create( 'Classified.tif', file.RasterXSize , file.RasterYSize , 1)
 file2.GetRasterBand(1).WriteArray(lista)
 
 # spatial ref system
@@ -184,7 +188,7 @@ file2.SetGeoTransform(georef)
 file2.FlushCache()
 
 # Filepaths
-fp = r'Classified2.tif'
+fp = r'Classified.tif'
 
 # opening the raster
 data = rasterio.open(fp)
@@ -202,10 +206,66 @@ fig, ax = plt.subplots(figsize=(10,8))
 image_hidden = ax.imshow(data.read()[0], cmap=cm)
 cbar= fig.colorbar(image_hidden, ax=ax, ticks=[2.375,3.15,3.875,4.65])
 cbar.ax.yaxis.set_tick_params(width=0)
+plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
 cbar.ax.set_yticklabels(['Heavy vegetation \nand water bodies', 
-                         'Intermediate Vegetation', 'light to no Vegetation',
+                         'Intermediate Vegetation\nand shadows', 'light to no Vegetation',
                          'Urban Areas'], fontsize=16, weight='bold')  # vertically oriented colorbar
 show(data, ax=ax, cmap=cm)
+plt.savefig('ClassifiedColored.jpg', dpi=300, bbox_inches='tight')
 
+
+# =============================================================================
+# =============================================================================
+# Circular cutting 
+
+# removing ticks and converting the image for pillow
+fig, ax = plt.subplots(figsize=(10,10))
+image_hidden = ax.imshow(data.read()[0], cmap=cm)
+show(data, ax=ax, cmap=cm)
+plt.xticks([])
+plt.yticks([])
+plt.savefig('Pillimge.jpg', dpi=300, bbox_inches='tight')
+
+
+img=Image.open('Pillimge.jpg')
+height,width = img.size
+lum_img = Image.new('L', [height,width] , 0)  
+draw = ImageDraw.Draw(lum_img)
+draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
+              fill = 255, outline = "white")
+img_arr =np.array(img)
+lum_img_arr =np.array(lum_img)
+display(Image.fromarray(lum_img_arr))
+final_img_arr = np.dstack((img_arr,lum_img_arr))
+display(Image.fromarray(final_img_arr))
+Image.fromarray(final_img_arr).save('CircleUrkle.png')
+# =============================================================================
+# =============================================================================
+# Evaluation graph
+
+#  Mosaiced.jpg, clipped.jpg, Pillimage.jpg, CircleUrkle.png
+
+# saving the Mosaic and clipped images ####takes a long time, skip in analysis####
+
+# Mosaic
+fp = r'Mosaic.tif'
+data = rasterio.open(fp)
+fig, ax = plt.subplots(figsize=(10,10))
+image_hidden = ax.imshow(data.read()[0], cmap='gray')
+show(data, ax=ax, cmap='gray')
+plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+plt.savefig('Mosaiced.jpg', dpi=300, bbox_inches='tight')
+
+# Clip
+fp = r'Clip.tif'
+data = rasterio.open(fp)
+fig, ax = plt.subplots(figsize=(10,10))
+image_hidden = ax.imshow(data.read()[0], cmap='gray')
+show(data, ax=ax, cmap='gray')
+plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+plt.savefig('Clipped.jpg', dpi=300, bbox_inches='tight')
 
 # =============================================================================
