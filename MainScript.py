@@ -217,7 +217,7 @@ plt.savefig('ClassifiedColored.jpg', dpi=300, bbox_inches='tight')
 
 # =============================================================================
 # =============================================================================
-# Circular cutting 
+# Pillow processing
 
 # removing ticks and converting the image for pillow
 fig, ax = plt.subplots(figsize=(10,10))
