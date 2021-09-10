@@ -248,6 +248,26 @@ Image.fromarray(final_img_arr).save('CircleUrkle.png')
 
 # saving the Mosaic and clipped images ####takes a long time, skip in analysis####
 
+# before mosaics
+fp = r'656_64_55.tif'
+data = rasterio.open(fp)
+fig, ax = plt.subplots(figsize=(10,10))
+image_hidden = ax.imshow(data.read()[0], cmap='gray')
+show(data, ax=ax, cmap='gray')
+plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+plt.savefig('Raw1.jpg', dpi=300, bbox_inches='tight')
+
+fp = r'656_65_50.tif'
+data = rasterio.open(fp)
+fig, ax = plt.subplots(figsize=(10,10))
+image_hidden = ax.imshow(data.read()[0], cmap='gray')
+show(data, ax=ax, cmap='gray')
+plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+plt.savefig('Raw2.jpg', dpi=300, bbox_inches='tight')
+
+
 # Mosaic
 fp = r'Mosaic.tif'
 data = rasterio.open(fp)
