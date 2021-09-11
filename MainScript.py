@@ -198,6 +198,7 @@ data = rasterio.open(fp)
 colors = ['darkgreen', 'forestgreen', 'honeydew', 'lightgray']  # R -> G -> B
 n_bins = [1, 2, 3, 4]  # Discretizes the interpolation into bins
 cmap_name = 'my_list'
+fig, axs = plt.subplots(2, 2, figsize=(6, 9))
 for n_bin, ax in zip(n_bins, axs.ravel()):
     cm = LinearSegmentedColormap.from_list(cmap_name, colors, N=n_bin)
 
@@ -217,7 +218,7 @@ plt.savefig('ClassifiedColored.jpg', dpi=300, bbox_inches='tight')
 
 # =============================================================================
 # =============================================================================
-# Pillow processing
+# Circular cutting 
 
 # removing ticks and converting the image for pillow
 fig, ax = plt.subplots(figsize=(10,10))
