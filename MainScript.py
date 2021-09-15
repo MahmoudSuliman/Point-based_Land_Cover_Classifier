@@ -257,7 +257,7 @@ image_hidden = ax.imshow(data.read()[0], cmap='gray')
 show(data, ax=ax, cmap='gray')
 plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
 plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
-plt.savefig('Raw1.jpg', dpi=300, bbox_inches='tight')
+# plt.savefig('Raw1.jpg', dpi=300, bbox_inches='tight')
 
 fp = r'656_65_50.tif'
 data = rasterio.open(fp)
