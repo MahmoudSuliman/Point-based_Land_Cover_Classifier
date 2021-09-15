@@ -39,7 +39,7 @@ swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 # Raster Mosaic and preparation
 
 ############# add an if statement to this so that it does not automatically
-############# mosaics
+############# mosaics (the name must be mosaic tho for the data visualization)
 
 # File and folder paths
 dirpath = r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Historiska_ortofoton_1960_PAN_tif__493271c1-5839-4fc1-b9cb-081f4f83da6d_'
@@ -229,13 +229,13 @@ plt.yticks([])
 plt.savefig('Pillimge.jpg', dpi=300, bbox_inches='tight')
 
 
-img=Image.open('Pillimge.jpg')
-height,width = img.size
+cimg=Image.open('Pillimge.jpg')
+height,width = cimg.size
 lum_img = Image.new('L', [height,width] , 0)  
 draw = ImageDraw.Draw(lum_img)
 draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
               fill = 255, outline = "white")
-img_arr =np.array(img)
+img_arr =np.array(cimg)
 lum_img_arr =np.array(lum_img)
 display(Image.fromarray(lum_img_arr))
 final_img_arr = np.dstack((img_arr,lum_img_arr))
@@ -257,7 +257,7 @@ image_hidden = ax.imshow(data.read()[0], cmap='gray')
 show(data, ax=ax, cmap='gray')
 plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
 plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
-# plt.savefig('Raw1.jpg', dpi=300, bbox_inches='tight')
+plt.savefig('Raw1.jpg', dpi=300, bbox_inches='tight')
 
 fp = r'656_65_50.tif'
 data = rasterio.open(fp)
@@ -289,4 +289,27 @@ plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
 plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
 plt.savefig('Clipped.jpg', dpi=300, bbox_inches='tight')
 
+# Classified
+fig, ax = plt.subplots(figsize=(10,8))
+image_hidden = ax.imshow(data.read()[0], cmap=cm)
+plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+show(data, ax=ax, cmap=cm)
+plt.savefig('ClassifiedVis.jpg', dpi=300, bbox_inches='tight')
+
+
+# Evaluation figure plotting
+fig, axs = plt.subplots(1,2, figsize=(10,8))
+fig.suptitle('Insert the name and number of the station', y=0.85, fontsize=20)
+axs[0].imshow(img.imread('Clipped.jpg'))
+axs[0].axis('off') # removes ticks and border (spines)
+axs[0].set_title('Clipped')
+axs[1].imshow(img.imread('ClassifiedVis.jpg'))
+axs[1].axis('off') # removes ticks and border (spines)
+axs[1].set_title('Classified') # removes ticks and border (spines)
+fig.tight_layout(pad=4.0)
+
+
+
+# =============================================================================
 # =============================================================================
