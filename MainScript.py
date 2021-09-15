@@ -306,10 +306,9 @@ axs[0].axis('off') # removes ticks and border (spines)
 axs[0].set_title('Clipped')
 axs[1].imshow(img.imread('ClassifiedVis.jpg'))
 axs[1].axis('off') # removes ticks and border (spines)
-axs[1].set_title('Classified') # removes ticks and border (spines)
+axs[1].set_title('Classified')
 fig.tight_layout(pad=4.0)
+plt.savefig('Evaluate_'+'add stations name'+'.jpg', dpi=300, bbox_inches='tight')
 
 
-
-# =============================================================================
 # =============================================================================
