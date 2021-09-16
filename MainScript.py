@@ -19,6 +19,8 @@ import pandas as pd
 import glob
 import PIL
 from PIL import Image, ImageDraw
+Image.MAX_IMAGE_PIXELS = None
+
 
 import rasterio
 from rasterio.plot import show
@@ -226,6 +228,10 @@ image_hidden = ax.imshow(data.read()[0], cmap=cm)
 show(data, ax=ax, cmap=cm)
 plt.xticks([])
 plt.yticks([])
+# ax.spines['top'].set_visible(False)
+# ax.spines['right'].set_visible(False)
+# ax.spines['bottom'].set_visible(False)
+# ax.spines['left'].set_visible(False)
 plt.savefig('Pillimge.jpg', dpi=300, bbox_inches='tight')
 
 
@@ -241,6 +247,21 @@ display(Image.fromarray(lum_img_arr))
 final_img_arr = np.dstack((img_arr,lum_img_arr))
 display(Image.fromarray(final_img_arr))
 Image.fromarray(final_img_arr).save('CircleUrkle.png')
+
+### tiff trial
+cimg=Image.open('Classified.tif')
+height,width = cimg.size
+lum_img = Image.new('L', [height,width] , 0)  
+draw = ImageDraw.Draw(lum_img)
+draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
+              fill = 255, outline = "white")
+img_arr =np.array(cimg)
+lum_img_arr =np.array(lum_img)
+display(Image.fromarray(lum_img_arr))
+final_img_arr = np.dstack((img_arr,lum_img_arr))
+display(Image.fromarray(final_img_arr))
+Image.fromarray(final_img_arr).save('CircleNotUrkle.tif')
+
 # =============================================================================
 # =============================================================================
 # Evaluation graph
@@ -249,7 +270,7 @@ Image.fromarray(final_img_arr).save('CircleUrkle.png')
 
 # saving the Mosaic and clipped images ####takes a long time, skip in analysis####
 
-# before mosaics
+# before mosaics #### make it in a loop based on name ######
 fp = r'656_64_55.tif'
 data = rasterio.open(fp)
 fig, ax = plt.subplots(figsize=(10,10))
@@ -311,4 +332,31 @@ fig.tight_layout(pad=4.0)
 plt.savefig('Evaluate_'+'add stations name'+'.jpg', dpi=300, bbox_inches='tight')
 
 
+# =============================================================================
+# =============================================================================
+# 
+from collections import defaultdict
+
+
+im = Image.open('Classified.tif') #.convert('RGB')
+by_color = defaultdict(int)
+for pixel in im.getdata():
+    by_color[pixel] += 1 # number of pixels with Tex (0,0,0) RGB values
+
+im = Image.open('CircleUrkle.png') #.convert('RGB')
+by_color3 = defaultdict(int)
+for pixel in im.getdata():
+    by_color3[pixel] += 1 # number of pixels with Tex (r,g,b) RGB values
+
+im = Image.open('Pillimge.jpg') #.convert('RGB')
+by_color4 = defaultdict(int)
+for pixel in im.getdata():
+    by_color4[pixel] += 1 # number of pixels with Tex (r,g,b) RGB values
+
+im = Image.open('CircleNotUrkle.tif')#.convert('RGB')
+by_color2 = defaultdict(int)
+for pixel in im.getdata():
+    by_color2[pixel] += 1 # number of pixels with Tex (0,0,0) RGB values
+
+plt.imshow(by_color)
 # =============================================================================
