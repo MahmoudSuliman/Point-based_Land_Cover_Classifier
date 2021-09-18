@@ -251,6 +251,41 @@ plt.savefig('CBar.jpg', dpi=300, bbox_inches='tight')
 
 # Circular cutting 
 
+# clipped
+data = clipped
+# removing ticks and converting the image for pillow
+fig, ax = plt.subplots(figsize=(10,10))
+image_hidden = ax.imshow(data.read()[0], cmap='gray')
+show(data, ax=ax, cmap='gray')
+plt.xticks([])
+plt.yticks([])
+# ax.spines['top'].set_visible(False)
+# ax.spines['right'].set_visible(False)
+# ax.spines['bottom'].set_visible(False)
+# ax.spines['left'].set_visible(False)
+plt.savefig('GrayPill.jpg', dpi=300, bbox_inches='tight')
+
+
+cimg=Image.open('GrayPill.jpg')
+height,width = cimg.size
+lum_img = Image.new('L', [height,width] , 0)  
+draw = ImageDraw.Draw(lum_img)
+draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
+              fill = 255, outline = "white")
+img_arr =np.array(cimg)
+lum_img_arr =np.array(lum_img)
+display(Image.fromarray(lum_img_arr))
+final_img_arr = np.dstack((img_arr,lum_img_arr))
+display(Image.fromarray(final_img_arr))
+Image.fromarray(final_img_arr).save('CircleGray.png')
+
+# convert image to remove background data (no data)
+image = Image.open('CircleGray.png').convert('RGBA')
+new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
+new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
+new_image.convert('RGB').save('CircleGray.jpg')  # Save as JPEG
+
+# classified
 # removing ticks and converting the image for pillow
 fig, ax = plt.subplots(figsize=(10,10))
 image_hidden = ax.imshow(data.read()[0], cmap=cm)
@@ -277,6 +312,7 @@ final_img_arr = np.dstack((img_arr,lum_img_arr))
 display(Image.fromarray(final_img_arr))
 Image.fromarray(final_img_arr).save('CircleUrkle.png')
 
+# convert image to remove background data (no data)
 image = Image.open('CircleUrkle.png').convert('RGBA')
 new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
 new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
@@ -284,7 +320,7 @@ new_image.convert('RGB').save('CircleUrkle.jpg')  # Save as JPEG
 
 # plotting full cbar image
 
-im1 = Image.open('CircleUrkle.png')
+im1 = Image.open('CircleUrkle.jpg')
 im2 = Image.open('CBar.jpg')
 
 def get_concat_h(im1, im2):
@@ -345,24 +381,15 @@ image_hidden = ax.imshow(data.read()[0], cmap='gray')
 show(data, ax=ax, cmap='gray')
 plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
 plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
-plt.savefig('Clipped.jpg', dpi=300, bbox_inches='tight')
-
-# Classified
-fig, ax = plt.subplots(figsize=(10,8))
-image_hidden = ax.imshow(data.read()[0], cmap=cm)
-plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
-show(data, ax=ax, cmap=cm)
-plt.savefig('ClassifiedVis.jpg', dpi=300, bbox_inches='tight')
-
+plt.savefig('Clipped.png', dpi=300, bbox_inches='tight')
 
 # Evaluation figure plotting
 fig, axs = plt.subplots(1,2, figsize=(10,8))
 fig.suptitle('Insert the name and number of the station', y=0.85, fontsize=20)
-axs[0].imshow(img.imread('Clipped.jpg'))
+axs[0].imshow(img.imread('CircleGray.jpg'))
 axs[0].axis('off') # removes ticks and border (spines)
 axs[0].set_title('Clipped')
-axs[1].imshow(img.imread('ClassifiedVis.jpg'))
+axs[1].imshow(img.imread('CircleUrkle.jpg'))
 axs[1].axis('off') # removes ticks and border (spines)
 axs[1].set_title('Classified')
 fig.tight_layout(pad=4.0)
@@ -371,28 +398,13 @@ plt.savefig('Evaluate_'+'add stations name'+'.jpg', dpi=300, bbox_inches='tight'
 
 # =============================================================================
 # =============================================================================
-# 
+# Extracting values
 
 
 im = Image.open('Classified.tif') #.convert('RGB')
 by_color = defaultdict(int)
 for pixel in im.getdata():
     by_color[pixel] += 1 # number of pixels with Tex (0,0,0) RGB values
-
-im = Image.open('CircleUrkle.png') #.convert('RGB')
-by_color3 = defaultdict(int)
-for pixel in im.getdata():
-    by_color3[pixel] += 1 # number of pixels with Tex (r,g,b) RGB values
-
-im = Image.open('Pillimge.jpg') #.convert('RGB')
-by_color4 = defaultdict(int)
-for pixel in im.getdata():
-    by_color4[pixel] += 1 # number of pixels with Tex (r,g,b) RGB values
-
-im = Image.open('CircleNotUrkle.tif')#.convert('RGB')
-by_color2 = defaultdict(int)
-for pixel in im.getdata():
-    by_color2[pixel] += 1 # number of pixels with Tex (0,0,0) RGB values
 
 
 # =============================================================================
