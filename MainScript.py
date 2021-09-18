@@ -17,6 +17,7 @@ from matplotlib.ticker import ScalarFormatter
 import numpy as np
 import pandas as pd
 import glob
+from collections import defaultdict
 import PIL
 from PIL import Image, ImageDraw
 Image.MAX_IMAGE_PIXELS = None
@@ -91,7 +92,7 @@ with rasterio.open(out_fp, "w", **out_meta) as dest:
 
 # Filepaths
 fp = r'Mosaic.tif'
-out_tif = r'Clip.tif'
+out_tif = r'Clip3.tif'
 
 # opening the raster
 data = rasterio.open(fp)
@@ -102,6 +103,39 @@ show(data, cmap='gray')
 # Södertälje Coordinates:
 # Decimal (lat,lon): (59.2141, 17.6291) 
 # Northing easting (E,N): (650084.04312309, 6566851.5500514) 
+
+import pyproj
+import json
+from shapely.geometry import Point, mapping
+from functools import partial
+from shapely.ops import transform
+
+point = Point(17.6291, 59.2141) 
+
+local_azimuthal_projection = f"+proj=aeqd +R=6371000 +units=m +lat_0={point.y} +lon_0={point.x}"
+
+wgs84_to_aeqd = partial(
+        pyproj.transform,
+        pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),
+        pyproj.Proj(local_azimuthal_projection),
+    )
+
+aeqd_to_wgs84 = partial(
+        pyproj.transform,
+        pyproj.Proj(local_azimuthal_projection),
+        pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),
+    )
+
+aeqd_to_swer = partial(
+        pyproj.transform,
+        pyproj.Proj(local_azimuthal_projection),
+        pyproj.Proj(swer),
+    )
+
+point_transformed = transform(wgs84_to_aeqd, point)
+loc_buffer = point_transformed.buffer(200)
+
+buffer_wgs84 = transform(aeqd_to_swer, loc_buffer)
 
 # creating a boundary box with shapely around the Area of interest
 # WGS84 coordinates
@@ -117,8 +151,9 @@ maxx, maxy = 650084.04312309+x, 6566851.5500514+x
 bbox = box(minx, miny, maxx, maxy)
 
 # Inserting the box into a geodataframe
+geo = gpd.GeoDataFrame({'geometry': buffer_wgs84}, index=[0], crs=from_epsg(3006))
 # geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(4326))
-geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(3006))
+# geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(3006))
 
 # Re-project into the same coordinate system as the raster data (sweref99)
 # geo = geo.to_crs(crs=data.crs.data)
@@ -335,7 +370,6 @@ plt.savefig('Evaluate_'+'add stations name'+'.jpg', dpi=300, bbox_inches='tight'
 # =============================================================================
 # =============================================================================
 # 
-from collections import defaultdict
 
 
 im = Image.open('Classified.tif') #.convert('RGB')
@@ -358,5 +392,6 @@ by_color2 = defaultdict(int)
 for pixel in im.getdata():
     by_color2[pixel] += 1 # number of pixels with Tex (0,0,0) RGB values
 
-plt.imshow(by_color)
+
 # =============================================================================
+
