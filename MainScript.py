@@ -177,9 +177,9 @@ out_meta.update({"driver": "GTiff", "height": out_img.shape[1],
 with rasterio.open(out_tif, "w", **out_meta) as dest:
     dest.write(out_img)
 
-# masking no data (background) values
-with rasterio.open(out_tif, "r+") as dataset:
-    dataset.nodata = 0
+# # masking no data (background) values
+# with rasterio.open(out_tif, "r+") as dataset:
+#     dataset.nodata = 0
     
 # plotting our new clipped raster
 clipped = rasterio.open(out_tif)
@@ -239,6 +239,14 @@ cbar.ax.set_yticklabels(['Heavy vegetation \nand water bodies',
                          'Urban Areas'], fontsize=16, weight='bold')  # vertically oriented colorbar
 show(data, ax=ax, cmap=cm)
 plt.savefig('ClassifiedColored.jpg', dpi=300, bbox_inches='tight')
+
+# cropping the color bar
+cbim = Image.open('ClassifiedColored.jpg')
+cbim_crop = cbim.crop((2100, 0, 3249, 1947))
+
+plt.imshow(cbim_crop)
+plt.axis('off') # removes ticks and border (spines)
+plt.savefig('CBar.jpg', dpi=300, bbox_inches='tight')
 
 
 # =============================================================================
