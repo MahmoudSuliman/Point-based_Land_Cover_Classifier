@@ -28,11 +28,15 @@ from rasterio.plot import show
 from rasterio.plot import show_hist
 from rasterio.merge import merge
 from rasterio.mask import mask
-from shapely.geometry import box
+from shapely.geometry import box, Point, mapping
 import geopandas as gpd
 from fiona.crs import from_epsg
 from osgeo import gdal
 import pycrs
+import pyproj
+import json
+from functools import partial
+from shapely.ops import transform
 
 # import georaster
 # conda install -c conda-forge georaster
@@ -92,7 +96,7 @@ with rasterio.open(out_fp, "w", **out_meta) as dest:
 
 # Filepaths
 fp = r'Mosaic.tif'
-out_tif = r'Clip3.tif'
+out_tif = r'Clip.tif'
 
 # opening the raster
 data = rasterio.open(fp)
@@ -104,59 +108,39 @@ show(data, cmap='gray')
 # Decimal (lat,lon): (59.2141, 17.6291) 
 # Northing easting (E,N): (650084.04312309, 6566851.5500514) 
 
-import pyproj
-import json
-from shapely.geometry import Point, mapping
-from functools import partial
-from shapely.ops import transform
+# creating a central point with shapely # lon, lat
+point = Point(17.6291, 59.2141)
 
-point = Point(17.6291, 59.2141) 
-
+# creating a local projection for that point
 local_azimuthal_projection = f"+proj=aeqd +R=6371000 +units=m +lat_0={point.y} +lon_0={point.x}"
 
-wgs84_to_aeqd = partial(
-        pyproj.transform,
-        pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),
-        pyproj.Proj(local_azimuthal_projection),
-    )
+# transform (wgs84-lap)
+wgs84_to_aeqd = partial(pyproj.transform,
+                        pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),
+                        pyproj.Proj(local_azimuthal_projection),)
 
-aeqd_to_wgs84 = partial(
-        pyproj.transform,
-        pyproj.Proj(local_azimuthal_projection),
-        pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),
-    )
+# transform (lap-wgs84)
+aeqd_to_wgs84 = partial(pyproj.transform,
+                        pyproj.Proj(local_azimuthal_projection),
+                        pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),)
 
-aeqd_to_swer = partial(
-        pyproj.transform,
-        pyproj.Proj(local_azimuthal_projection),
-        pyproj.Proj(swer),
-    )
+# transform (lap-sweref99)
+aeqd_to_swer = partial(pyproj.transform,
+                       pyproj.Proj(local_azimuthal_projection),
+                       pyproj.Proj(swer),)
 
+# first point transformation
 point_transformed = transform(wgs84_to_aeqd, point)
+
+# creating a 200m radius buffer (product is 400m) 
 loc_buffer = point_transformed.buffer(200)
 
+# final transformation for the shapefile
 buffer_wgs84 = transform(aeqd_to_swer, loc_buffer)
 
-# creating a boundary box with shapely around the Area of interest
-# WGS84 coordinates
-
-# x=0.01
-# minx, miny = 17.9093-x, 59.1785-x
-# maxx, maxy = 17.9092+x, 59.1785+x
-
-x=300 #600*600m
-minx, miny = 650084.04312309-x, 6566851.5500514-x
-maxx, maxy = 650084.04312309+x, 6566851.5500514+x
-
-bbox = box(minx, miny, maxx, maxy)
 
 # Inserting the box into a geodataframe
 geo = gpd.GeoDataFrame({'geometry': buffer_wgs84}, index=[0], crs=from_epsg(3006))
-# geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(4326))
-# geo = gpd.GeoDataFrame({'geometry': bbox}, index=[0], crs=from_epsg(3006))
-
-# Re-project into the same coordinate system as the raster data (sweref99)
-# geo = geo.to_crs(crs=data.crs.data)
 
 # Getting the geometry coordinates in RasterIO-compatible format (E,N)
 
@@ -181,19 +165,23 @@ print(out_meta)
 # print(epsg_code)
 
 # updating the metadata with new dimensions, transform (affine) 
-# and CRS (as Proj4 text). NOTE: the crs code here manually reprojects it with
+# and CRS (as Proj4 text). 
+
+# NOTE: the crs code here manually reprojects it with
 # sweref info but not the sweref is not identified by ArcMap.
 out_meta.update({"driver": "GTiff", "height": out_img.shape[1],
                  "width": out_img.shape[2],"transform": out_transform,
-                 "crs": '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'})
-                 # "crs": pycrs.parse.from_epsg_code(epsg_code).to_proj4()})
+                 "crs": swer})
 
 # saving the clipped raster to disk
 with rasterio.open(out_tif, "w", **out_meta) as dest:
     dest.write(out_img)
 
+# masking no data (background) values
+with rasterio.open(out_tif, "r+") as dataset:
+    dataset.nodata = 0
+    
 # plotting our new clipped raster
-
 clipped = rasterio.open(out_tif)
 show(clipped, cmap='gray')
 
