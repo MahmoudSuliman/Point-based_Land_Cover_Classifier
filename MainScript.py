@@ -244,13 +244,11 @@ plt.savefig('ClassifiedColored.jpg', dpi=300, bbox_inches='tight')
 cbim = Image.open('ClassifiedColored.jpg')
 cbim_crop = cbim.crop((2100, 0, 3249, 1947))
 
+fig, ax = plt.subplots(figsize=(10,10.5))
 plt.imshow(cbim_crop)
 plt.axis('off') # removes ticks and border (spines)
 plt.savefig('CBar.jpg', dpi=300, bbox_inches='tight')
 
-
-# =============================================================================
-# =============================================================================
 # Circular cutting 
 
 # removing ticks and converting the image for pillow
@@ -279,19 +277,27 @@ final_img_arr = np.dstack((img_arr,lum_img_arr))
 display(Image.fromarray(final_img_arr))
 Image.fromarray(final_img_arr).save('CircleUrkle.png')
 
-### tiff trial
-cimg=Image.open('Classified.tif')
-height,width = cimg.size
-lum_img = Image.new('L', [height,width] , 0)  
-draw = ImageDraw.Draw(lum_img)
-draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
-              fill = 255, outline = "white")
-img_arr =np.array(cimg)
-lum_img_arr =np.array(lum_img)
-display(Image.fromarray(lum_img_arr))
-final_img_arr = np.dstack((img_arr,lum_img_arr))
-display(Image.fromarray(final_img_arr))
-Image.fromarray(final_img_arr).save('CircleNotUrkle.tif')
+image = Image.open('CircleUrkle.png').convert('RGBA')
+new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
+new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
+new_image.convert('RGB').save('CircleUrkle.jpg')  # Save as JPEG
+
+# plotting full cbar image
+
+im1 = Image.open('CircleUrkle.png')
+im2 = Image.open('CBar.jpg')
+
+def get_concat_h(im1, im2):
+    dst = Image.new('RGB', (im1.width + im2.width, im1.height))
+    dst.paste(im1, (0, 0))
+    dst.paste(im2, (im1.width, 0))
+    return dst
+
+get_concat_h(im1, im2).save('WorkingCBar.jpg')
+
+plt.imshow(Image.open('WorkingCBar.jpg'))
+plt.axis('off') # removes ticks and border (spines)
+plt.savefig('fullCircleCBar.jpg', dpi=300, bbox_inches='tight')
 
 # =============================================================================
 # =============================================================================
