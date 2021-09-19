@@ -56,13 +56,25 @@ out_fp = r'Mosaic.tif'
 
 # extracting station's name and image type from parent folders
 
+# station's name
 zapath=Path(dirpath)
 parentpath=zapath.parent.absolute() # gets parent path of directory
-splitpath=os.path.split(parentpath) # splits parent path
+splitparpath=os.path.split(parentpath) # splits parent path
+stname = splitparpath[1] # gets station name from split path
 
-stname=splitpath[1]
+# image type
+splitpath = os.path.split(dirpath) # splits current path
+iminfo = splitpath[1] # full string of image info
 
-
+# if statement to extract image info from full string
+if iminfo.find('1960') != -1:
+    print('Historical (1960)')
+    imtype= 'Historical (1960)'
+elif iminfo.find('PAN_0_5_m_latest') != -1:
+    print('Latest')
+    imtype='latest'
+else:
+    print('Nah!')
 
 # Make a search criteria to select the orthophotos
 search_criteria = "656*.tif"
