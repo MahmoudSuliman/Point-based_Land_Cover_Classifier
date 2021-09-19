@@ -47,9 +47,6 @@ swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 # =============================================================================
 # Raster Mosaic and preparation
 
-############# add an if statement to this so that it does not automatically
-############# mosaics (the name must be mosaic tho for the data visualization)
-
 # File and folder paths
 dirpath = r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Historiska_ortofoton_1960_PAN_tif__493271c1-5839-4fc1-b9cb-081f4f83da6d_'
 out_fp = r'Mosaic.tif'
@@ -157,7 +154,7 @@ aeqd_to_swer = partial(pyproj.transform,
 point_transformed = transform(wgs84_to_aeqd, point)
 
 # creating a 200m radius buffer (product is 400m) 
-loc_buffer = point_transformed.buffer(50)
+loc_buffer = point_transformed.buffer(2)
 
 # final transformation for the shapefile
 buffer_wgs84 = transform(aeqd_to_swer, loc_buffer)
@@ -259,8 +256,8 @@ cbar.ax.yaxis.set_tick_params(width=0)
 plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
 plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
 cbar.ax.set_yticklabels(['Heavy vegetation \nand water bodies', 
-                         'Intermediate Vegetation\nand shadows', 'light to no Vegetation',
-                         'Urban Areas'], fontsize=16, weight='bold')  # vertically oriented colorbar
+                          'Intermediate Vegetation\nand shadows', 'light to no Vegetation',
+                          'Urban Areas'], fontsize=16, weight='bold')  # vertically oriented colorbar
 show(data, ax=ax, cmap=cm)
 plt.savefig('ClassifiedColored.jpg', dpi=300, bbox_inches='tight')
 
@@ -309,8 +306,11 @@ new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba backgro
 new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
 new_image.convert('RGB').save('CircleGray.jpg')  # Save as JPEG
 
-# classified
+# classified #########################
 # removing ticks and converting the image for pillow
+fp = r'Classified.tif'
+data = rasterio.open(fp)
+
 fig, ax = plt.subplots(figsize=(10,10))
 image_hidden = ax.imshow(data.read()[0], cmap=cm)
 show(data, ax=ax, cmap=cm)
@@ -415,7 +415,7 @@ plt.savefig('Clipped.png', dpi=300, bbox_inches='tight')
 
 # Evaluation figure plotting
 fig, axs = plt.subplots(1,2, figsize=(10,8))
-fig.suptitle('Insert the name and number of the station', y=0.85, fontsize=20)
+fig.suptitle(stname+' ('+imtype+')', y=0.85, fontsize=20)
 axs[0].imshow(img.imread('CircleGray.jpg'))
 axs[0].axis('off') # removes ticks and border (spines)
 axs[0].set_title('Clipped')
@@ -423,7 +423,7 @@ axs[1].imshow(img.imread('CircleUrkle.jpg'))
 axs[1].axis('off') # removes ticks and border (spines)
 axs[1].set_title('Classified')
 fig.tight_layout(pad=4.0)
-plt.savefig(eva_dir+'Evaluate_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
+plt.savefig(eva_dir+'Eva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
 
 # second clipping
 # Filepaths
@@ -526,7 +526,7 @@ plt.savefig('Clipped400.png', dpi=300, bbox_inches='tight')
 
 # Evaluation figure plotting
 fig, axs = plt.subplots(1,2, figsize=(10,8))
-fig.suptitle('Insert the name and number of the station', y=0.85, fontsize=20)
+fig.suptitle(stname+' ('+imtype+')', y=0.85, fontsize=20)
 axs[0].imshow(img.imread('Clipped400.png'))
 axs[0].axis('off') # removes ticks and border (spines)
 axs[0].set_title('Clipped 400m')
@@ -534,7 +534,7 @@ axs[1].imshow(img.imread('Clipped.png'))
 axs[1].axis('off') # removes ticks and border (spines)
 axs[1].set_title('Clipped 100m')
 fig.tight_layout(pad=4.0)
-plt.savefig(eva_dir+'CEvaluate_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
+plt.savefig(eva_dir+'CEva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
 
 # =============================================================================
 # =============================================================================
@@ -544,7 +544,23 @@ plt.savefig(eva_dir+'CEvaluate_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_in
 im = Image.open('Classified.tif') #.convert('RGB')
 by_color = defaultdict(int)
 for pixel in im.getdata():
-    by_color[pixel] += 1 # number of pixels with Tex (0,0,0) RGB values
+    by_color[pixel] += 1 # number of pixels with 2(h.veg), 3(l.veg), 4(no.veg), 5(urban)
+                            # 5(heavy), 4(light to no), 3(inter), 2(urban)
+
+
+
+fp = r'Classified.tif'
+
+# opening the raster
+data = rasterio.open(fp)
+
+fig, ax = plt.subplots(figsize=(10,8))
+image_hidden = ax.imshow(data.read()[0], cmap=cm)
+cbar= fig.colorbar(image_hidden, ax=ax, ticks=[2.375,3.15,3.875,4.65])
+cbar.ax.yaxis.set_tick_params(width=0)
+plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+show(data, ax=ax, cmap=cm)
 
 
 # =============================================================================
