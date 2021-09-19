@@ -23,7 +23,7 @@ from collections import defaultdict
 import PIL
 from PIL import Image, ImageDraw
 Image.MAX_IMAGE_PIXELS = None
-
+from pathlib import Path
 
 import rasterio
 from rasterio.plot import show
@@ -53,6 +53,16 @@ swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 # File and folder paths
 dirpath = r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Historiska_ortofoton_1960_PAN_tif__493271c1-5839-4fc1-b9cb-081f4f83da6d_'
 out_fp = r'Mosaic.tif'
+
+# extracting station's name and image type from parent folders
+
+zapath=Path(dirpath)
+parentpath=zapath.parent.absolute() # gets parent path of directory
+splitpath=os.path.split(parentpath) # splits parent path
+
+stname=splitpath[1]
+
+
 
 # Make a search criteria to select the orthophotos
 search_criteria = "656*.tif"
