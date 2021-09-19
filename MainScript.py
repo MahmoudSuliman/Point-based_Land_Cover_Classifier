@@ -9,7 +9,6 @@ Created on Thu Sep  2 15:24:33 2021
 # Importing libraries
 
 import os
-
 import matplotlib.image as img
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -44,12 +43,11 @@ swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 
 # File and folder paths
 # Changing the work directory
-os.chdir(r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Historiska_ortofoton_1960_PAN_tif__493271c1-5839-4fc1-b9cb-081f4f83da6d_')
+workdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Historiska_ortofoton_1960_PAN_tif__493271c1-5839-4fc1-b9cb-081f4f83da6d_'
+os.chdir(workdir)
 
 # Script directories
-script_dir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Historiska_ortofoton_1960_PAN_tif__493271c1-5839-4fc1-b9cb-081f4f83da6d_'
-dirpath = r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Historiska_ortofoton_1960_PAN_tif__493271c1-5839-4fc1-b9cb-081f4f83da6d_'
-os.getcwd()
+script_dir = dirpath = os.getcwd()
 out_fp = r'Mosaic.tif'
 
 # extracting station's name and image type from parent folders
@@ -209,8 +207,8 @@ lista = band.ReadAsArray()
 lista[np.where( lista <= 0 )] = 1 # Nan
 lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
 lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
-lista[np.where((105 < lista) & (lista <= 200)) ] = 4 # L.veg
-lista[np.where( lista > 200 )] = 5 # urban
+lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
+lista[np.where( lista > 220 )] = 5 # urban
 
 # creating new file
 file2 = driver.Create( 'Classified.tif', file.RasterXSize , file.RasterYSize , 1)
