@@ -68,8 +68,8 @@ iminfo = splitpath[1] # full string of image info
 
 # if statement to extract image info from full string
 if iminfo.find('1960') != -1:
-    print('Historical (1960)')
-    imtype= 'Historical (1960)'
+    print('Historical')
+    imtype= 'Historical'
 elif iminfo.find('PAN_0_5_m_latest') != -1:
     print('Latest')
     imtype='latest'
@@ -423,7 +423,7 @@ axs[1].imshow(img.imread('CircleUrkle.jpg'))
 axs[1].axis('off') # removes ticks and border (spines)
 axs[1].set_title('Classified')
 fig.tight_layout(pad=4.0)
-plt.savefig(eva_dir+'Evaluate_'+'add stations name'+'.jpg', dpi=300, bbox_inches='tight')
+plt.savefig(eva_dir+'Evaluate_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
 
 # second clipping
 # Filepaths
@@ -534,7 +534,7 @@ axs[1].imshow(img.imread('Clipped.png'))
 axs[1].axis('off') # removes ticks and border (spines)
 axs[1].set_title('Clipped 100m')
 fig.tight_layout(pad=4.0)
-plt.savefig(eva_dir+'CEvaluate_'+'add stations name'+'.jpg', dpi=300, bbox_inches='tight')
+plt.savefig(eva_dir+'CEvaluate_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
 
 # =============================================================================
 # =============================================================================
