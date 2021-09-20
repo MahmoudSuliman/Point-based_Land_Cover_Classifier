@@ -81,7 +81,7 @@ else:
 # Raster Mosaics
 
 # Make a search criteria to select the orthophotos
-search_criteria = "656*.tif"
+search_criteria = "6*.tif"
 q = os.path.join(dirpath, search_criteria)
 
 # Searching for the tiff files using the glob function
