@@ -38,6 +38,9 @@ from functools import partial
 from shapely.ops import transform
 
 swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
+
+# add time analysis of tasks
+########### add seversl different classification ########
 # =============================================================================
 # Preparation
 
@@ -152,8 +155,8 @@ aeqd_to_swer = partial(pyproj.transform,
 # first point transformation
 point_transformed = transform(wgs84_to_aeqd, point)
 
-# creating a 50m radius buffer (product is 100m) 
-loc_buffer = point_transformed.buffer(50)
+# creating a 100m radius buffer (product is 200m) 
+loc_buffer = point_transformed.buffer(100)
 
 # final transformation for the shapefile
 buffer_wgs84 = transform(aeqd_to_swer, loc_buffer)
@@ -463,10 +466,10 @@ fig, axs = plt.subplots(1,2, figsize=(10,8))
 fig.suptitle(stname+' ('+imtype+')', y=0.85, fontsize=20)
 axs[0].imshow(img.imread('CircleClip400.jpg'))
 axs[0].axis('off') # removes ticks and border (spines)
-axs[0].set_title('Clipped 400m')
+axs[0].set_title('Clipped 200m radius')
 axs[1].imshow(img.imread('CircleGray.jpg'))
 axs[1].axis('off') # removes ticks and border (spines)
-axs[1].set_title('Clipped 100m')
+axs[1].set_title('Clipped 100m radius')
 fig.tight_layout(pad=4.0)
 plt.savefig(eva_dir+'CEva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
 
