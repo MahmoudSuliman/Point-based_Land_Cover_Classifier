@@ -46,7 +46,7 @@ swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 
 # File and folder paths
 # Changing the work directory
-workdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Historiska_ortofoton_1960_PAN_tif__493271c1-5839-4fc1-b9cb-081f4f83da6d_'
+workdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Ortofoto_PAN_0_5_m_latest_tif__2666ff73-c064-412e-81e3-88ee60ea8d74_'
 os.chdir(workdir)
 
 # Script directories
@@ -206,13 +206,26 @@ file = gdal.Open(r'Clip.tif')
 band = file.GetRasterBand(1)
 lista = band.ReadAsArray()
 
+# -----------------------------------------------------------------------------
 # reclassification
+
+# 1: södertälje old (bright streets and houses, grey intermediate veg)
+# lista[np.where( lista <= 0 )] = 1 # Nan
+# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+# lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
+# lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
+# lista[np.where( lista > 220 )] = 5 # urban
+
+# 2: södertälje new (dark rooftops, not so dark vegetation and greyish streets)
 lista[np.where( lista <= 0 )] = 1 # Nan
 lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
-lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
-lista[np.where( lista > 220 )] = 5 # urban
+lista[np.where((90 < lista) & (lista <= 130)) ] = 3 # I.veg
+lista[np.where((130 < lista) & (lista <= 175)) ] = 4 # L.veg
+lista[np.where((lista > 175))] = 5
+lista[np.where((70 < lista) & (lista <= 90)) ] = 5
 
+
+# -----------------------------------------------------------------------------
 # creating new file
 file2 = driver.Create( 'Classified.tif', file.RasterXSize , file.RasterYSize , 1)
 file2.GetRasterBand(1).WriteArray(lista)
