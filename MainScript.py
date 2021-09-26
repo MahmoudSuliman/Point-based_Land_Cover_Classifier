@@ -210,20 +210,29 @@ lista = band.ReadAsArray()
 # -----------------------------------------------------------------------------
 # reclassification
 
-# 1: södertälje old (bright streets and houses, grey intermediate veg)
-lista[np.where( lista <= 0 )] = 1 # Nan
-lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
-lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
-lista[np.where( lista > 220 )] = 5 # urban
+# 1. södertälje old (bright streets and houses, grey intermediate veg)
+# lista[np.where( lista <= 0 )] = 1 # Nan
+# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+# lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
+# lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
+# lista[np.where( lista > 220 )] = 5 # urban
 
-# 2: södertälje new (dark rooftops, not so dark vegetation and greyish streets)
+# 2. södertälje new (dark rooftops, not so dark vegetation and greyish streets)
 # lista[np.where( lista <= 0 )] = 1 # Nan
 # lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
 # lista[np.where((90 < lista) & (lista <= 130)) ] = 3 # I.veg
 # lista[np.where((130 < lista) & (lista <= 175)) ] = 4 # L.veg
 # lista[np.where((lista > 175))] = 5
 # lista[np.where((70 < lista) & (lista <= 90)) ] = 5
+
+# 3. tullinge old (bright light veg)
+lista[np.where( lista <= 0 )] = 4 # Nan
+lista[np.where((205 < lista) & (lista <= 206)) ] = 2 # H.veg
+lista[np.where((206 < lista) & (lista <= 207)) ] = 2 # I.veg
+lista[np.where((207 < lista) & (lista <= 209)) ] = 3 # I.veg
+lista[np.where((3 < lista) & (lista <= 4)) ] = 4 # I.veg'
+lista[np.where((4 < lista) & (lista <= 205)) ] = 4 # L.veg
+lista[np.where( lista > 209 )] = 5 # urban
 
 
 # -----------------------------------------------------------------------------
