@@ -46,7 +46,7 @@ swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 
 # File and folder paths
 # Changing the work directory
-workdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\2.Södertälje\Ortofoto_PAN_0_5_m_latest_tif__2666ff73-c064-412e-81e3-88ee60ea8d74_'
+workdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\1.Tullinge A\Historiska_ortofoton_1960_PAN_tif__d9c09fff-9a63-40a6-96fe-0f5046249428_'
 os.chdir(workdir)
 
 # Script directories
@@ -61,7 +61,8 @@ splitparpath=os.path.split(parentpath) # splits parent path
 stname = splitparpath[1] # gets station name from split path
 
 # Södertälje Coordinates:
-lat,lon = 59.2141, 17.6291 
+# lat,lon = 59.2141, 17.6291 
+lat,lon = 59.1785, 17.9093 #tullinge
 northing, easting = 650084.04312309, 6566851.5500514 
 
 
@@ -210,19 +211,19 @@ lista = band.ReadAsArray()
 # reclassification
 
 # 1: södertälje old (bright streets and houses, grey intermediate veg)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-# lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
-# lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
-# lista[np.where( lista > 220 )] = 5 # urban
-
-# 2: södertälje new (dark rooftops, not so dark vegetation and greyish streets)
 lista[np.where( lista <= 0 )] = 1 # Nan
 lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-lista[np.where((90 < lista) & (lista <= 130)) ] = 3 # I.veg
-lista[np.where((130 < lista) & (lista <= 175)) ] = 4 # L.veg
-lista[np.where((lista > 175))] = 5
-lista[np.where((70 < lista) & (lista <= 90)) ] = 5
+lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
+lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
+lista[np.where( lista > 220 )] = 5 # urban
+
+# 2: södertälje new (dark rooftops, not so dark vegetation and greyish streets)
+# lista[np.where( lista <= 0 )] = 1 # Nan
+# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+# lista[np.where((90 < lista) & (lista <= 130)) ] = 3 # I.veg
+# lista[np.where((130 < lista) & (lista <= 175)) ] = 4 # L.veg
+# lista[np.where((lista > 175))] = 5
+# lista[np.where((70 < lista) & (lista <= 90)) ] = 5
 
 
 # -----------------------------------------------------------------------------
@@ -428,7 +429,7 @@ aeqd_to_swer = partial(pyproj.transform,
                        pyproj.Proj(swer),)
 point_transformed = transform(wgs84_to_aeqd, point)
 
-loc_buffer = point_transformed.buffer(200)
+loc_buffer = point_transformed.buffer(400)
 buffer_wgs84 = transform(aeqd_to_swer, loc_buffer)
 geo = gpd.GeoDataFrame({'geometry': buffer_wgs84}, index=[0], crs=from_epsg(3006))
 coords = getFeatures(geo)
@@ -479,7 +480,7 @@ fig, axs = plt.subplots(1,2, figsize=(10,8))
 fig.suptitle(stname+' ('+imtype+')', y=0.85, fontsize=20)
 axs[0].imshow(img.imread('CircleClip400.jpg'))
 axs[0].axis('off') # removes ticks and border (spines)
-axs[0].set_title('Clipped 200m radius')
+axs[0].set_title('Clipped 400m radius')
 axs[1].imshow(img.imread('CircleGray.jpg'))
 axs[1].axis('off') # removes ticks and border (spines)
 axs[1].set_title('Clipped 100m radius')
