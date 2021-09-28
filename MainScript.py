@@ -46,7 +46,7 @@ swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 
 # File and folder paths
 # Changing the work directory
-workdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\10.Skövde\Ortofoto_PAN_0_5_m_latest_tif__58aac5f4-a56a-430a-8d25-4b9e25797005_'
+workdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\17.Höljes\Ortofoto_PAN_0_5_m_latest_tif__4285278c-bc76-4124-8214-168a49070a62_'
 
 os.chdir(workdir)
 
@@ -65,7 +65,9 @@ stname = splitparpath[1] # gets station name from split path
 # lat,lon = 59.2141, 17.6291 
 # lat,lon = 59.1785, 17.9093 #tullinge
 # lat,lon = 59.3417, 18.0549 #stockholm
-lat,lon = 58.3949, 13.8436 #skövde
+# lat,lon = 58.3949, 13.8436 #skövde
+# lat, lon = 57.267, 16.4114 #oskarshamn
+lat, lon = 60.9066, 12.5843 #holjes
 
 northing, easting = 650084.04312309, 6566851.5500514 
 
@@ -215,11 +217,11 @@ lista = band.ReadAsArray()
 # reclassification
 
 # 1. södertälje old (bright streets and houses, grey intermediate veg)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-# lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
-# lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
-# lista[np.where( lista > 220 )] = 5 # urban
+lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
+lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
+lista[np.where( lista > 220 )] = 5 # urban
 
 # 2. södertälje new (dark rooftops, not so dark vegetation and greyish streets)
 # lista[np.where( lista <= 0 )] = 1 # Nan
@@ -268,11 +270,21 @@ lista = band.ReadAsArray()
 # lista[np.where( lista > 110 )] = 5 # urban
 
 # 7. skövde new (dark grey rooftops, lighter streets)
-lista[np.where( lista <= 0 )] = 1 # Nan
-lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-lista[np.where((70 < lista) & (lista <= 120)) ] = 3 # I.veg
-lista[np.where((120 < lista) & (lista <= 130)) ] = 4 # L.veg
-lista[np.where( lista > 130 )] = 5 # urban
+# lista[np.where( lista <= 0 )] = 1 # Nan
+# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+# lista[np.where((70 < lista) & (lista <= 120)) ] = 3 # I.veg
+# lista[np.where((120 < lista) & (lista <= 130)) ] = 4 # L.veg
+# lista[np.where( lista > 130 )] = 5 # urban
+
+# 8. oskarshamn new (dark urban area, greyish streets)
+# lista[np.where( lista <= 0 )] = 1 # Nan
+# lista[np.where((0 < lista) & (lista <= 30)) ] = 5 # H.veg
+# lista[np.where((30 < lista) & (lista <= 70)) ] = 2 # H.veg
+# lista[np.where((70 < lista) & (lista <= 90)) ] = 3 # I.veg
+# lista[np.where((90 < lista) & (lista <= 160)) ] = 4 # L.veg
+# lista[np.where( lista > 160 )] = 5 # urban
+
+# 9.
 
 # -----------------------------------------------------------------------------
 # creating new file
