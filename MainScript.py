@@ -217,11 +217,11 @@ lista = band.ReadAsArray()
 # reclassification
 
 # 1. södertälje old (bright streets and houses, grey intermediate veg)
-lista[np.where( lista <= 0 )] = 1 # Nan
-lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
-lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
-lista[np.where( lista > 220 )] = 5 # urban
+# lista[np.where( lista <= 0 )] = 1 # Nan
+# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+# lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
+# lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
+# lista[np.where( lista > 220 )] = 5 # urban
 
 # 2. södertälje new (dark rooftops, not so dark vegetation and greyish streets)
 # lista[np.where( lista <= 0 )] = 1 # Nan
@@ -240,7 +240,7 @@ lista[np.where( lista > 220 )] = 5 # urban
 # lista[np.where((4 < lista) & (lista <= 205)) ] = 4 # L.veg
 # lista[np.where( lista > 209 )] = 5 # urban
 
-# 4. Tulinge new (semi-normal i.veg kinda bright urban)
+# # 4. Tulinge new (semi-normal i.veg kinda bright urban)
 # lista[np.where( lista <= 0 )] = 1 # Nan
 # lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
 # lista[np.where((70 < lista) & (lista <= 90)) ] = 3 # I.veg
@@ -269,14 +269,14 @@ lista[np.where( lista > 220 )] = 5 # urban
 # lista[np.where((105 < lista) & (lista <= 110)) ] = 4 # L.veg
 # lista[np.where( lista > 110 )] = 5 # urban
 
-# 7. skövde new (dark grey rooftops, lighter streets)
+# 8. skövde new (dark grey rooftops, lighter streets)
 # lista[np.where( lista <= 0 )] = 1 # Nan
 # lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
 # lista[np.where((70 < lista) & (lista <= 120)) ] = 3 # I.veg
 # lista[np.where((120 < lista) & (lista <= 130)) ] = 4 # L.veg
 # lista[np.where( lista > 130 )] = 5 # urban
 
-# 8. oskarshamn new (dark urban area, greyish streets)
+# 9. oskarshamn new (dark urban area, greyish streets)
 # lista[np.where( lista <= 0 )] = 1 # Nan
 # lista[np.where((0 < lista) & (lista <= 30)) ] = 5 # H.veg
 # lista[np.where((30 < lista) & (lista <= 70)) ] = 2 # H.veg
@@ -284,7 +284,12 @@ lista[np.where( lista > 220 )] = 5 # urban
 # lista[np.where((90 < lista) & (lista <= 160)) ] = 4 # L.veg
 # lista[np.where( lista > 160 )] = 5 # urban
 
-# 9.
+# 10. holjes new (semi dark i.veg, all veg throughout)
+lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 80)) ] = 2 # H.veg
+lista[np.where((80 < lista) & (lista <= 140)) ] = 3 # I.veg
+lista[np.where((140 < lista) & (lista <= 150)) ] = 4 # L.veg
+lista[np.where( lista > 150 )] = 5 # urban
 
 # -----------------------------------------------------------------------------
 # creating new file
