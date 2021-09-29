@@ -214,83 +214,95 @@ band = file.GetRasterBand(1)
 lista = band.ReadAsArray()
 
 # -----------------------------------------------------------------------------
-# reclassification
+# Defining classification scenarios
+clcases= {}
 
-# 1. södertälje old (bright streets and houses, grey intermediate veg)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-# lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
-# lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
-# lista[np.where( lista > 220 )] = 5 # urban
+# site specific cases
+clcases['''01.södertälje old 
+        (bright streets and houses, grey intermediate veg)'''
+        ] = '''lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
+lista[np.where((105 < lista) & (lista <= 220)) ] = 4 # L.veg
+lista[np.where( lista > 220 )] = 5 # urban'''
 
-# 2. södertälje new (dark rooftops, not so dark vegetation and greyish streets)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-# lista[np.where((90 < lista) & (lista <= 130)) ] = 3 # I.veg
-# lista[np.where((130 < lista) & (lista <= 175)) ] = 4 # L.veg
-# lista[np.where((lista > 175))] = 5
-# lista[np.where((70 < lista) & (lista <= 90)) ] = 5
+clcases['''02.södertälje new 
+        (dark rooftops, not so dark vegetation and greyish streets)'''
+        ] = '''lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+lista[np.where((90 < lista) & (lista <= 130)) ] = 3 # I.veg
+lista[np.where((130 < lista) & (lista <= 175)) ] = 4 # L.veg
+lista[np.where((lista > 175))] = 5
+lista[np.where((70 < lista) & (lista <= 90)) ] = 5'''
 
-# 3. tullinge old (bright light veg)
-# lista[np.where( lista <= 0 )] = 4 # Nan
-# lista[np.where((205 < lista) & (lista <= 206)) ] = 2 # H.veg
-# lista[np.where((206 < lista) & (lista <= 207)) ] = 2 # I.veg
-# lista[np.where((207 < lista) & (lista <= 209)) ] = 3 # I.veg
-# lista[np.where((3 < lista) & (lista <= 4)) ] = 4 # I.veg'
-# lista[np.where((4 < lista) & (lista <= 205)) ] = 4 # L.veg
-# lista[np.where( lista > 209 )] = 5 # urban
+clcases['03.tullinge old (bright light veg)'
+        ]= '''lista[np.where( lista <= 0 )] = 4 # Nan
+lista[np.where((205 < lista) & (lista <= 206)) ] = 2 # H.veg
+lista[np.where((206 < lista) & (lista <= 207)) ] = 2 # I.veg
+lista[np.where((207 < lista) & (lista <= 209)) ] = 3 # I.veg
+lista[np.where((3 < lista) & (lista <= 4)) ] = 4 # I.veg'
+lista[np.where((4 < lista) & (lista <= 205)) ] = 4 # L.veg
+lista[np.where( lista > 209 )] = 5 # urban'''
 
-# # 4. Tulinge new (semi-normal i.veg kinda bright urban)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-# lista[np.where((70 < lista) & (lista <= 90)) ] = 3 # I.veg
-# lista[np.where((90 < lista) & (lista <= 170)) ] = 4 # L.veg
-# lista[np.where( lista > 170 )] = 5 # urban
+clcases['''04.Tulinge new 
+        (semi-normal i.veg kinda bright urban)'''
+        ]= '''lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+lista[np.where((70 < lista) & (lista <= 90)) ] = 3 # I.veg
+lista[np.where((90 < lista) & (lista <= 170)) ] = 4 # L.veg
+lista[np.where( lista > 170 )] = 5 # urban'''
 
-# 5. stockholm old (dark rooftops, semi-bright streets that mix with lots of lveg)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 30)) ] = 2 # H.veg
-# lista[np.where((90 < lista) & (lista <= 100)) ] = 3 # I.veg
-# lista[np.where((100 < lista) & (lista <= 190)) ] = 4 # L.veg
-# lista[np.where((lista > 190))] = 5
-# lista[np.where((30 < lista) & (lista <= 90)) ] = 5
+clcases['''05.stockholm old 
+        (dark rooftops, semi-bright streets that mix with lots of lveg)'''
+        ] = '''lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 30)) ] = 2 # H.veg
+lista[np.where((90 < lista) & (lista <= 100)) ] = 3 # I.veg
+lista[np.where((100 < lista) & (lista <= 190)) ] = 4 # L.veg
+lista[np.where((lista > 190))] = 5
+lista[np.where((30 < lista) & (lista <= 90)) ] = 5'''
 
-# 6. stockholm new (lots of trees, greyish rooftops)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-# lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
-# lista[np.where((105 < lista) & (lista <= 190)) ] = 4 # L.veg
-# lista[np.where( lista > 190 )] = 5 # urban
+clcases['''06.stockholm new 
+         (lots of trees, greyish rooftops)'''
+        ] = '''lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
+lista[np.where((105 < lista) & (lista <= 190)) ] = 4 # L.veg
+lista[np.where( lista > 190 )] = 5 # urban'''
 
-# 7. skövde old (dark grey rooftops, slightly lighter streets)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-# lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
-# lista[np.where((105 < lista) & (lista <= 110)) ] = 4 # L.veg
-# lista[np.where( lista > 110 )] = 5 # urban
+clcases['''07.skövde old 
+        (dark grey rooftops, slightly lighter streets)'''
+        ] = '''lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+lista[np.where((70 < lista) & (lista <= 105)) ] = 3 # I.veg
+lista[np.where((105 < lista) & (lista <= 110)) ] = 4 # L.veg
+lista[np.where( lista > 110 )] = 5 # urban'''
 
-# 8. skövde new (dark grey rooftops, lighter streets)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
-# lista[np.where((70 < lista) & (lista <= 120)) ] = 3 # I.veg
-# lista[np.where((120 < lista) & (lista <= 130)) ] = 4 # L.veg
-# lista[np.where( lista > 130 )] = 5 # urban
+clcases['''08.skövde new 
+        (dark grey rooftops, lighter streets)'''
+        ] = '''lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 70)) ] = 2 # H.veg
+lista[np.where((70 < lista) & (lista <= 120)) ] = 3 # I.veg
+lista[np.where((120 < lista) & (lista <= 130)) ] = 4 # L.veg
+lista[np.where( lista > 130 )] = 5 # urban'''
 
-# 9. oskarshamn new (dark urban area, greyish streets)
-# lista[np.where( lista <= 0 )] = 1 # Nan
-# lista[np.where((0 < lista) & (lista <= 30)) ] = 5 # H.veg
-# lista[np.where((30 < lista) & (lista <= 70)) ] = 2 # H.veg
-# lista[np.where((70 < lista) & (lista <= 90)) ] = 3 # I.veg
-# lista[np.where((90 < lista) & (lista <= 160)) ] = 4 # L.veg
-# lista[np.where( lista > 160 )] = 5 # urban
+clcases['''09.oskarshamn new 
+        (dark urban area, greyish streets)'''
+        ] = '''lista[np.where( lista <= 0 )] = 1 # Nan
+lista[np.where((0 < lista) & (lista <= 30)) ] = 5 # H.veg
+lista[np.where((30 < lista) & (lista <= 70)) ] = 2 # H.veg
+lista[np.where((70 < lista) & (lista <= 90)) ] = 3 # I.veg
+lista[np.where((90 < lista) & (lista <= 160)) ] = 4 # L.veg
+lista[np.where( lista > 160 )] = 5 # urban'''
 
-# 10. holjes new (semi dark i.veg, all veg throughout)
-lista[np.where( lista <= 0 )] = 1 # Nan
+clcases['''10.holjes new 
+        (semi dark i.veg, all veg throughout)'''
+        ] = '''lista[np.where( lista <= 0 )] = 1 # Nan 
 lista[np.where((0 < lista) & (lista <= 80)) ] = 2 # H.veg
-lista[np.where((80 < lista) & (lista <= 140)) ] = 3 # I.veg
-lista[np.where((140 < lista) & (lista <= 150)) ] = 4 # L.veg
-lista[np.where( lista > 150 )] = 5 # urban
+lista[np.where((80 < lista) & (lista <= 160)) ] = 3 # I.veg
+lista[np.where((160 < lista) & (lista <= 170)) ] = 4 # L.veg
+lista[np.where( lista > 170 )] = 5 # urban'''
 
+# 
 # -----------------------------------------------------------------------------
 # creating new file
 file2 = driver.Create( 'Classified.tif', file.RasterXSize , file.RasterYSize , 1)
