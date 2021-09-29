@@ -59,12 +59,14 @@ res_dir = os.path.join(script_dir, 'Results/')
 if not os.path.isdir(res_dir):
     os.makedirs(res_dir)
 
-for i in ['00','01','02','03','04','05','06','07','08','09','10']:
+for i in ['00','01','02','03','04','05','06','07','08','09','10',
+          'a1','a2','a3','a4','a5','a6','a7','a8']:
     cla_dir = os.path.join(script_dir, 'Results/'+i)
     if not os.path.isdir(cla_dir):
         os.makedirs(cla_dir)
 
-for i in ['00','01','02','03','04','05','06','07','08','09','10']:
+for i in ['00','01','02','03','04','05','06','07','08','09','10',
+          'a1','a2','a3','a4','a5','a6','a7','a8']:
     eva_dir = os.path.join(script_dir, 'Results/'+i+'/Evaluate')
     if not os.path.isdir(eva_dir):
         os.makedirs(eva_dir)
@@ -218,6 +220,38 @@ with rasterio.open(out_tif, "w", **out_meta) as dest:
 clipped = rasterio.open(out_tif)
 show(clipped, cmap='gray')
 
+# clipped
+data = clipped
+
+# removing ticks and converting the image for pillow
+fig, ax = plt.subplots(figsize=(10,10))
+image_hidden = ax.imshow(data.read()[0], cmap='gray')
+show(data, ax=ax, cmap='gray')
+plt.xticks([])
+plt.yticks([])
+plt.savefig(r'GrayPill.jpg', dpi=300, bbox_inches='tight')
+
+# Cropping using pillow
+cimg=Image.open(r'GrayPill.jpg')
+height,width = cimg.size
+lum_img = Image.new('L', [height,width] , 0)  
+draw = ImageDraw.Draw(lum_img)
+draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
+              fill = 255, outline = "white")
+img_arr =np.array(cimg)
+lum_img_arr =np.array(lum_img)
+final_img_arr = np.dstack((img_arr,lum_img_arr))
+display(Image.fromarray(final_img_arr))
+Image.fromarray(final_img_arr).save('CircleGray.png')
+
+# Convert image to remove background data (no data)
+image = Image.open('CircleGray.png').convert('RGBA')
+new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
+new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
+new_image.convert('RGB').save('CircleGray.jpg')  # Save as JPEG
+
+
+
 # =============================================================================
 # =============================================================================
 # Classification
@@ -317,6 +351,25 @@ lista[np.where((80 < lista) & (lista <= 160)) ] = 3 # I.veg
 lista[np.where((160 < lista) & (lista <= 170)) ] = 4 # L.veg
 lista[np.where( lista > 170 )] = 5 # urban'''
 
+clcombs=np.array([0,0,0]).reshape((1,3))
+for i in[70]:
+    for j in [90,130]:
+        for k in [140,180,200,240]:
+            clcombs2=np.array([i,j,k]).reshape((1,3))
+            clcombs=np.concatenate((clcombs,clcombs2), axis=0)
+
+clcombs=np.delete(clcombs,(0,0),0)
+
+clextrakeys = ['a1','a2','a3','a4','a5','a6','a7','a8']
+
+for i in range(0,len(clcombs)):
+    clcases[clextrakeys[i]] = '''lista[np.where( lista <= 0 )] = 1 # Nan 
+lista[np.where((0 < lista) & (lista <= '''+str(clcombs[i,0])+''')) ] = 2 # H.veg
+lista[np.where(('''+str(clcombs[i,0])+''' < lista) & (lista <= '''+str(clcombs[i,1])+''')) ] = 3 # I.veg
+lista[np.where(('''+str(clcombs[i,1])+''' < lista) & (lista <= '''+str(clcombs[i,2])+''')) ] = 4 # L.veg
+lista[np.where( lista > '''+str(clcombs[i,2])+''' )] = 5 # urban'''
+
+
 clnum=[]
 for keys, values in clcases.items():
     clnum.append(keys[:2])
@@ -377,37 +430,6 @@ for key, value in clcases.items():
             # =============================================================================
             # =============================================================================
             # Circular cutting 
-            
-            # clipped
-            data = clipped
-            
-            # removing ticks and converting the image for pillow
-            fig, ax = plt.subplots(figsize=(10,10))
-            image_hidden = ax.imshow(data.read()[0], cmap='gray')
-            show(data, ax=ax, cmap='gray')
-            plt.xticks([])
-            plt.yticks([])
-            plt.savefig(r'Results/'+clnum[i]+'/GrayPill.jpg', dpi=300, bbox_inches='tight')
-            
-            # Cropping using pillow
-            cimg=Image.open(r'Results/'+clnum[i]+'/GrayPill.jpg')
-            height,width = cimg.size
-            lum_img = Image.new('L', [height,width] , 0)  
-            draw = ImageDraw.Draw(lum_img)
-            draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
-                          fill = 255, outline = "white")
-            img_arr =np.array(cimg)
-            lum_img_arr =np.array(lum_img)
-            final_img_arr = np.dstack((img_arr,lum_img_arr))
-            display(Image.fromarray(final_img_arr))
-            Image.fromarray(final_img_arr).save('CircleGray.png')
-            
-            # Convert image to remove background data (no data)
-            image = Image.open('CircleGray.png').convert('RGBA')
-            new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
-            new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
-            new_image.convert('RGB').save('CircleGray.jpg')  # Save as JPEG
-            
             
             # classified
             fp = r'Results/'+clnum[i]+'/Classified.tif'
@@ -508,6 +530,7 @@ for key, value in clcases.items():
             fig.tight_layout(pad=4.0)
             plt.savefig(r'Results/'+clnum[i]+'/Evaluate/Eva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
             
+            plt.close('all')
             # -----------------------------------------------------------------------------
             
             # =============================================================================
@@ -518,7 +541,11 @@ for key, value in clcases.items():
             by_color = defaultdict(int)
             for pixel in im.getdata():
                 by_color[pixel] += 1 # number of pixels with 2(h.veg), 3(l.veg), 4(no.veg), 5(urban)
-
+            
+            for keys, vals in by_color.items():
+                
+            pixres = pd.DataFrame(data=(by_color.items())).transpose()
+            pixres.to_csv(r'Results/'+clnum[i]+'/Evaluate/pixres.csv')
 # Clipping Evaluation
 
 fp = r'Mosaic.tif'; out_tif = r'Clip400.tif'
