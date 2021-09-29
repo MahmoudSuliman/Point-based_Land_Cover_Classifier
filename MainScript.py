@@ -54,6 +54,21 @@ os.chdir(workdir)
 script_dir = dirpath = os.getcwd()
 out_fp = r'Mosaic.tif'
 
+# creating results, classification and evaluation directory
+res_dir = os.path.join(script_dir, 'Results/')
+if not os.path.isdir(res_dir):
+    os.makedirs(res_dir)
+
+for i in ['00','01','02','03','04','05','06','07','08','09','10']:
+    cla_dir = os.path.join(script_dir, 'Results/'+i)
+    if not os.path.isdir(cla_dir):
+        os.makedirs(cla_dir)
+
+for i in ['00','01','02','03','04','05','06','07','08','09','10']:
+    eva_dir = os.path.join(script_dir, 'Results/'+i+'/Evaluate')
+    if not os.path.isdir(eva_dir):
+        os.makedirs(eva_dir)
+
 # extracting station's name and image type from parent folders
 # station's name
 zapath=Path(dirpath)
@@ -302,194 +317,208 @@ lista[np.where((80 < lista) & (lista <= 160)) ] = 3 # I.veg
 lista[np.where((160 < lista) & (lista <= 170)) ] = 4 # L.veg
 lista[np.where( lista > 170 )] = 5 # urban'''
 
-# 
+clnum=[]
+for keys, values in clcases.items():
+    clnum.append(keys[:2])
+
+for key, value in clcases.items():
+    for i in range(0,len(clnum)):
+        if key[:2]==clnum[i]:
+            lista = band.ReadAsArray()
+            exec(value)
+            
 # -----------------------------------------------------------------------------
 # creating new file
-file2 = driver.Create( 'Classified.tif', file.RasterXSize , file.RasterYSize , 1)
-file2.GetRasterBand(1).WriteArray(lista)
-
+            file2 = driver.Create( r'Results/'+clnum[i]+'/Classified.tif', file.RasterXSize , file.RasterYSize , 1)
+            file2.GetRasterBand(1).WriteArray(lista)
+            
 # Spatial referencing system obs
-proj = file.GetProjection()
-georef = file.GetGeoTransform()
-file2.SetProjection(proj)
-file2.SetGeoTransform(georef)
-file2.FlushCache()
-
+            proj = file.GetProjection()
+            georef = file.GetGeoTransform()
+            file2.SetProjection(proj)
+            file2.SetGeoTransform(georef)
+            file2.FlushCache()
+            
 # Adding  and opening output's filepath
-fp = r'Classified.tif'
-data = rasterio.open(fp)
-
+            fp = r'Results/'+clnum[i]+'/Classified.tif'
+            data = rasterio.open(fp)
+            
 # creating a custom colormap
-colors = ['darkgreen', 'forestgreen', 'honeydew', 'lightgray']  # R -> G -> B
-n_bins = [1, 2, 3, 4]  # Discretizes the interpolation into bins
-cmap_name = 'my_list'
-fig, axs = plt.subplots(2, 2, figsize=(6, 9))
-for n_bin, ax in zip(n_bins, axs.ravel()):
-    cm = LinearSegmentedColormap.from_list(cmap_name, colors, N=n_bin)
+            colors = ['darkgreen', 'forestgreen', 'honeydew', 'lightgray']  # R -> G -> B
+            n_bins = [1, 2, 3, 4]  # Discretizes the interpolation into bins
+            cmap_name = 'my_list'
+            fig, axs = plt.subplots(2, 2, figsize=(6, 9))
+            for n_bin, ax in zip(n_bins, axs.ravel()):
+                cm = LinearSegmentedColormap.from_list(cmap_name, colors, N=n_bin)
+            
+            # plotting the data
+            fig, ax = plt.subplots(figsize=(10,8))
+            image_hidden = ax.imshow(data.read()[0], cmap=cm)
+            cbar= fig.colorbar(image_hidden, ax=ax, ticks=[2.375,3.15,3.875,4.65])
+            cbar.ax.yaxis.set_tick_params(width=0)
+            plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+            plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+            cbar.ax.set_yticklabels(['Heavy vegetation \nand water bodies', 
+                                      'Intermediate Vegetation\nand shadows', 'light to no Vegetation',
+                                      'Urban Areas'], fontsize=16, weight='bold')  # vertically oriented colorbar
+            show(data, ax=ax, cmap=cm)
+            plt.savefig(r'Results/'+clnum[i]+'/ClassifiedColored.jpg', dpi=300, bbox_inches='tight')
+            
+            # cropping the color bar
+            cbim = Image.open(r'Results/'+clnum[i]+'/ClassifiedColored.jpg')
+            cbim_crop = cbim.crop((2100, 0, 3145, 1947))
+            
+            # Plotting and saving the cropped colorbar
+            fig, ax = plt.subplots(figsize=(10,10.5))
+            plt.imshow(cbim_crop)
+            plt.axis('off') # removes ticks and border (spines)
+            plt.savefig(r'Results/'+clnum[i]+'/CBar.jpg', dpi=300, bbox_inches='tight')
+            
+            # =============================================================================
+            # =============================================================================
+            # Circular cutting 
+            
+            # clipped
+            data = clipped
+            
+            # removing ticks and converting the image for pillow
+            fig, ax = plt.subplots(figsize=(10,10))
+            image_hidden = ax.imshow(data.read()[0], cmap='gray')
+            show(data, ax=ax, cmap='gray')
+            plt.xticks([])
+            plt.yticks([])
+            plt.savefig(r'Results/'+clnum[i]+'/GrayPill.jpg', dpi=300, bbox_inches='tight')
+            
+            # Cropping using pillow
+            cimg=Image.open(r'Results/'+clnum[i]+'/GrayPill.jpg')
+            height,width = cimg.size
+            lum_img = Image.new('L', [height,width] , 0)  
+            draw = ImageDraw.Draw(lum_img)
+            draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
+                          fill = 255, outline = "white")
+            img_arr =np.array(cimg)
+            lum_img_arr =np.array(lum_img)
+            final_img_arr = np.dstack((img_arr,lum_img_arr))
+            display(Image.fromarray(final_img_arr))
+            Image.fromarray(final_img_arr).save('CircleGray.png')
+            
+            # Convert image to remove background data (no data)
+            image = Image.open('CircleGray.png').convert('RGBA')
+            new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
+            new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
+            new_image.convert('RGB').save('CircleGray.jpg')  # Save as JPEG
+            
+            
+            # classified
+            fp = r'Results/'+clnum[i]+'/Classified.tif'
+            data = rasterio.open(fp)
+            
+            # removing ticks and converting the image for pillow
+            fig, ax = plt.subplots(figsize=(10,10))
+            image_hidden = ax.imshow(data.read()[0], cmap=cm)
+            show(data, ax=ax, cmap=cm)
+            plt.xticks([])
+            plt.yticks([])
+            plt.savefig(r'Results/'+clnum[i]+'/Pillimge.jpg', dpi=300, bbox_inches='tight')
+            
+            # Cropping using pillow
+            cimg=Image.open(r'Results/'+clnum[i]+'/Pillimge.jpg')
+            height,width = cimg.size
+            lum_img = Image.new('L', [height,width] , 0)  
+            draw = ImageDraw.Draw(lum_img)
+            draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
+                          fill = 255, outline = "white")
+            img_arr =np.array(cimg)
+            lum_img_arr =np.array(lum_img)
+            final_img_arr = np.dstack((img_arr,lum_img_arr))
+            display(Image.fromarray(final_img_arr))
+            Image.fromarray(final_img_arr).save(r'Results/'+clnum[i]+'/CircleUrkle.png')
+            
+            # convert image to remove background data (no data)
+            image = Image.open(r'Results/'+clnum[i]+'/CircleUrkle.png').convert('RGBA')
+            new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
+            new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
+            new_image.convert('RGB').save(r'Results/'+clnum[i]+'/CircleUrkle.jpg')  # Save as JPEG
+            
+            # plotting full cbar image
+            
+            im1 = Image.open(r'Results/'+clnum[i]+'/CircleUrkle.jpg')
+            im2 = Image.open(r'Results/'+clnum[i]+'/CBar.jpg')
+            
+            def get_concat_h(im1, im2):
+                dst = Image.new('RGB', (im1.width + im2.width, im1.height))
+                dst.paste(im1, (0, 0))
+                dst.paste(im2, (im1.width, 0))
+                return dst
+            
+            get_concat_h(im1, im2).save(r'Results/'+clnum[i]+'/WorkingCBar.jpg')
+            
+            plt.imshow(Image.open(r'Results/'+clnum[i]+'/WorkingCBar.jpg'))
+            plt.axis('off') # removes ticks and border (spines)
+            plt.savefig(r'Results/'+clnum[i]+'/fullCircleCBar.jpg', dpi=300, bbox_inches='tight')
+            
+            # =============================================================================
+            # =============================================================================
+            # Evaluation graphs
+            
+            
+            # -----------------------------------------------------------------------------
+            # Classification Evaluation
+            
+            # Raw products
+            for i in range(0,len(tiff_fps)):
+                fp = tiff_fps[i]
+                data = rasterio.open(fp)
+                fig, ax = plt.subplots(figsize=(10,10))
+                image_hidden = ax.imshow(data.read()[0], cmap='gray')
+                show(data, ax=ax, cmap='gray')
+                plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+                plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+                plt.savefig('Raw'+str(i+1)+'.jpg', dpi=300, bbox_inches='tight')
+            
+            # Mosaic
+            fp = r'Mosaic.tif'
+            data = rasterio.open(fp)
+            fig, ax = plt.subplots(figsize=(10,10))
+            image_hidden = ax.imshow(data.read()[0], cmap='gray')
+            show(data, ax=ax, cmap='gray')
+            plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+            plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+            plt.savefig(r'Results/'+clnum[i]+'/Mosaiced.jpg', dpi=300, bbox_inches='tight')
+            
+            # Clip
+            fp = r'Clip.tif'
+            data = rasterio.open(fp)
+            fig, ax = plt.subplots(figsize=(10,10))
+            image_hidden = ax.imshow(data.read()[0], cmap='gray')
+            show(data, ax=ax, cmap='gray')
+            plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+            plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+            plt.savefig(r'Results/'+clnum[i]+'/Clipped.png', dpi=300, bbox_inches='tight')
+            
+            # Evaluation figure plotting
+            fig, axs = plt.subplots(1,2, figsize=(10,8))
+            fig.suptitle(stname+' ('+imtype+')', y=0.85, fontsize=20)
+            axs[0].imshow(img.imread('CircleGray.jpg'))
+            axs[0].axis('off') # removes ticks and border (spines)
+            axs[0].set_title('Clipped')
+            axs[1].imshow(img.imread('CircleUrkle.jpg'))
+            axs[1].axis('off') # removes ticks and border (spines)
+            axs[1].set_title('Classified')
+            fig.tight_layout(pad=4.0)
+            plt.savefig(r'Results/'+clnum[i]+'/Evaluate/Eva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
+            
+            # -----------------------------------------------------------------------------
+            
+            # =============================================================================
+            # =============================================================================
+            # Extracting values
+            
+            im = Image.open('Classified.tif') #.convert('RGB')
+            by_color = defaultdict(int)
+            for pixel in im.getdata():
+                by_color[pixel] += 1 # number of pixels with 2(h.veg), 3(l.veg), 4(no.veg), 5(urban)
 
-# plotting the data
-fig, ax = plt.subplots(figsize=(10,8))
-image_hidden = ax.imshow(data.read()[0], cmap=cm)
-cbar= fig.colorbar(image_hidden, ax=ax, ticks=[2.375,3.15,3.875,4.65])
-cbar.ax.yaxis.set_tick_params(width=0)
-plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
-cbar.ax.set_yticklabels(['Heavy vegetation \nand water bodies', 
-                          'Intermediate Vegetation\nand shadows', 'light to no Vegetation',
-                          'Urban Areas'], fontsize=16, weight='bold')  # vertically oriented colorbar
-show(data, ax=ax, cmap=cm)
-plt.savefig('ClassifiedColored.jpg', dpi=300, bbox_inches='tight')
-
-# cropping the color bar
-cbim = Image.open('ClassifiedColored.jpg')
-cbim_crop = cbim.crop((2100, 0, 3145, 1947))
-
-# Plotting and saving the cropped colorbar
-fig, ax = plt.subplots(figsize=(10,10.5))
-plt.imshow(cbim_crop)
-plt.axis('off') # removes ticks and border (spines)
-plt.savefig('CBar.jpg', dpi=300, bbox_inches='tight')
-
-# =============================================================================
-# =============================================================================
-# Circular cutting 
-
-# clipped
-data = clipped
-
-# removing ticks and converting the image for pillow
-fig, ax = plt.subplots(figsize=(10,10))
-image_hidden = ax.imshow(data.read()[0], cmap='gray')
-show(data, ax=ax, cmap='gray')
-plt.xticks([])
-plt.yticks([])
-plt.savefig('GrayPill.jpg', dpi=300, bbox_inches='tight')
-
-# Cropping using pillow
-cimg=Image.open('GrayPill.jpg')
-height,width = cimg.size
-lum_img = Image.new('L', [height,width] , 0)  
-draw = ImageDraw.Draw(lum_img)
-draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
-              fill = 255, outline = "white")
-img_arr =np.array(cimg)
-lum_img_arr =np.array(lum_img)
-final_img_arr = np.dstack((img_arr,lum_img_arr))
-display(Image.fromarray(final_img_arr))
-Image.fromarray(final_img_arr).save('CircleGray.png')
-
-# Convert image to remove background data (no data)
-image = Image.open('CircleGray.png').convert('RGBA')
-new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
-new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
-new_image.convert('RGB').save('CircleGray.jpg')  # Save as JPEG
-
-
-# classified
-fp = r'Classified.tif'
-data = rasterio.open(fp)
-
-# removing ticks and converting the image for pillow
-fig, ax = plt.subplots(figsize=(10,10))
-image_hidden = ax.imshow(data.read()[0], cmap=cm)
-show(data, ax=ax, cmap=cm)
-plt.xticks([])
-plt.yticks([])
-plt.savefig('Pillimge.jpg', dpi=300, bbox_inches='tight')
-
-# Cropping using pillow
-cimg=Image.open('Pillimge.jpg')
-height,width = cimg.size
-lum_img = Image.new('L', [height,width] , 0)  
-draw = ImageDraw.Draw(lum_img)
-draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
-              fill = 255, outline = "white")
-img_arr =np.array(cimg)
-lum_img_arr =np.array(lum_img)
-final_img_arr = np.dstack((img_arr,lum_img_arr))
-display(Image.fromarray(final_img_arr))
-Image.fromarray(final_img_arr).save('CircleUrkle.png')
-
-# convert image to remove background data (no data)
-image = Image.open('CircleUrkle.png').convert('RGBA')
-new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
-new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
-new_image.convert('RGB').save('CircleUrkle.jpg')  # Save as JPEG
-
-# plotting full cbar image
-
-im1 = Image.open('CircleUrkle.jpg')
-im2 = Image.open('CBar.jpg')
-
-def get_concat_h(im1, im2):
-    dst = Image.new('RGB', (im1.width + im2.width, im1.height))
-    dst.paste(im1, (0, 0))
-    dst.paste(im2, (im1.width, 0))
-    return dst
-
-get_concat_h(im1, im2).save('WorkingCBar.jpg')
-
-plt.imshow(Image.open('WorkingCBar.jpg'))
-plt.axis('off') # removes ticks and border (spines)
-plt.savefig('fullCircleCBar.jpg', dpi=300, bbox_inches='tight')
-
-# =============================================================================
-# =============================================================================
-# Evaluation graphs
-
-# creating evaluation directory
-eva_dir = os.path.join(script_dir, 'Evaluate/')
-
-if not os.path.isdir(eva_dir):
-    os.makedirs(eva_dir)
-
-# -----------------------------------------------------------------------------
-# Classification Evaluation
-
-# Raw products
-for i in range(0,len(tiff_fps)):
-    fp = tiff_fps[i]
-    data = rasterio.open(fp)
-    fig, ax = plt.subplots(figsize=(10,10))
-    image_hidden = ax.imshow(data.read()[0], cmap='gray')
-    show(data, ax=ax, cmap='gray')
-    plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-    plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
-    plt.savefig('Raw'+str(i+1)+'.jpg', dpi=300, bbox_inches='tight')
-
-# Mosaic
-fp = r'Mosaic.tif'
-data = rasterio.open(fp)
-fig, ax = plt.subplots(figsize=(10,10))
-image_hidden = ax.imshow(data.read()[0], cmap='gray')
-show(data, ax=ax, cmap='gray')
-plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
-plt.savefig('Mosaiced.jpg', dpi=300, bbox_inches='tight')
-
-# Clip
-fp = r'Clip.tif'
-data = rasterio.open(fp)
-fig, ax = plt.subplots(figsize=(10,10))
-image_hidden = ax.imshow(data.read()[0], cmap='gray')
-show(data, ax=ax, cmap='gray')
-plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
-plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
-plt.savefig('Clipped.png', dpi=300, bbox_inches='tight')
-
-# Evaluation figure plotting
-fig, axs = plt.subplots(1,2, figsize=(10,8))
-fig.suptitle(stname+' ('+imtype+')', y=0.85, fontsize=20)
-axs[0].imshow(img.imread('CircleGray.jpg'))
-axs[0].axis('off') # removes ticks and border (spines)
-axs[0].set_title('Clipped')
-axs[1].imshow(img.imread('CircleUrkle.jpg'))
-axs[1].axis('off') # removes ticks and border (spines)
-axs[1].set_title('Classified')
-fig.tight_layout(pad=4.0)
-plt.savefig(eva_dir+'Eva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
-
-# -----------------------------------------------------------------------------
 # Clipping Evaluation
 
 fp = r'Mosaic.tif'; out_tif = r'Clip400.tif'
@@ -531,10 +560,10 @@ image_hidden = ax.imshow(data.read()[0], cmap='gray')
 show(data, ax=ax, cmap='gray')
 plt.xticks([])
 plt.yticks([])
-plt.savefig('Clip400.jpg', dpi=300, bbox_inches='tight')
+plt.savefig(r'Clip400.jpg', dpi=300, bbox_inches='tight')
 
 # Cropping using pillow
-cimg=Image.open('Clip400.jpg')
+cimg=Image.open(r'Clip400.jpg')
 height,width = cimg.size
 lum_img = Image.new('L', [height,width] , 0)  
 draw = ImageDraw.Draw(lum_img)
@@ -544,34 +573,25 @@ img_arr =np.array(cimg)
 lum_img_arr =np.array(lum_img)
 final_img_arr = np.dstack((img_arr,lum_img_arr))
 display(Image.fromarray(final_img_arr))
-Image.fromarray(final_img_arr).save('CircleClip400.png')
+Image.fromarray(final_img_arr).save(r'CircleClip400.png')
 
 # convert image to remove background data (no data)
-image = Image.open('CircleClip400.png').convert('RGBA')
+image = Image.open(r'CircleClip400.png').convert('RGBA')
 new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
 new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
-new_image.convert('RGB').save('CircleClip400.jpg')  # Save as JPEG
+new_image.convert('RGB').save(r'CircleClip400.jpg')  # Save as JPEG
 
 # Evaluation figure plotting
 fig, axs = plt.subplots(1,2, figsize=(10,8))
 fig.suptitle(stname+' ('+imtype+')', y=0.85, fontsize=20)
-axs[0].imshow(img.imread('CircleClip400.jpg'))
+axs[0].imshow(img.imread(r'CircleClip400.jpg'))
 axs[0].axis('off') # removes ticks and border (spines)
 axs[0].set_title('Clipped 400m radius')
 axs[1].imshow(img.imread('CircleGray.jpg'))
 axs[1].axis('off') # removes ticks and border (spines)
 axs[1].set_title('Clipped 100m radius')
 fig.tight_layout(pad=4.0)
-plt.savefig(eva_dir+'CEva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
-
-# =============================================================================
-# =============================================================================
-# Extracting values
-
-im = Image.open('Classified.tif') #.convert('RGB')
-by_color = defaultdict(int)
-for pixel in im.getdata():
-    by_color[pixel] += 1 # number of pixels with 2(h.veg), 3(l.veg), 4(no.veg), 5(urban)
+plt.savefig(r'Results/'+clnum[i]+'/Evaluate/CEva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
 
 # =============================================================================
 
