@@ -542,10 +542,9 @@ for key, value in clcases.items():
             for pixel in im.getdata():
                 by_color[pixel] += 1 # number of pixels with 2(h.veg), 3(l.veg), 4(no.veg), 5(urban)
             
-            for keys, vals in by_color.items():
-                
             pixres = pd.DataFrame(data=(by_color.items())).transpose()
-            pixres.to_csv(r'Results/'+clnum[i]+'/Evaluate/pixres.csv')
+            pixres.to_csv(r'Results/'+clnum[i]+'/Evaluate/'+stname+'_'+clnum[i]+'_pixres.csv')
+
 # Clipping Evaluation
 
 fp = r'Mosaic.tif'; out_tif = r'Clip400.tif'
