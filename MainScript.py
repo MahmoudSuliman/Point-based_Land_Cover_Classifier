@@ -543,7 +543,7 @@ for key, value in clcases.items():
                 by_color[pixel] += 1 # number of pixels with 2(h.veg), 3(l.veg), 4(no.veg), 5(urban)
             
             pixres = pd.DataFrame(data=(by_color.items())).transpose()
-            pixres.to_csv(r'Results/'+clnum[i]+'/Evaluate/'+stname+'_'+clnum[i]+'_pixres.csv')
+            pixres.to_csv(r'Results/'+clnum[i]+'/Evaluate/'+stname+'_'+imtype+'_'+clnum[i]+'_pixres.csv')
 
 # Clipping Evaluation
 
