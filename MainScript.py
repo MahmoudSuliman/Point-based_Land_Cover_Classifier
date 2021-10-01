@@ -488,15 +488,15 @@ for key, value in clcases.items():
             # Classification Evaluation
             
             # Raw products
-            for i in range(0,len(tiff_fps)):
-                fp = tiff_fps[i]
+            for h in range(0,len(tiff_fps)):
+                fp = tiff_fps[h]
                 data = rasterio.open(fp)
                 fig, ax = plt.subplots(figsize=(10,10))
                 image_hidden = ax.imshow(data.read()[0], cmap='gray')
                 show(data, ax=ax, cmap='gray')
                 plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
                 plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
-                plt.savefig('Raw'+str(i+1)+'.jpg', dpi=300, bbox_inches='tight')
+                plt.savefig('Raw'+str(h+1)+'.jpg', dpi=300, bbox_inches='tight')
             
             # Mosaic
             fp = r'Mosaic.tif'
@@ -537,7 +537,7 @@ for key, value in clcases.items():
             # =============================================================================
             # Extracting values
             
-            im = Image.open('Classified.tif') #.convert('RGB')
+            im = Image.open(r'Results/'+clnum[i]+'/Classified.tif') #.convert('RGB')
             by_color = defaultdict(int)
             for pixel in im.getdata():
                 by_color[pixel] += 1 # number of pixels with 2(h.veg), 3(l.veg), 4(no.veg), 5(urban)
