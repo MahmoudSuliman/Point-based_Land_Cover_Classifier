@@ -46,7 +46,7 @@ swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 
 # File and folder paths
 # Changing the work directory
-workdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\17.Höljes\Ortofoto_PAN_0_5_m_latest_tif__4285278c-bc76-4124-8214-168a49070a62_'
+# workdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P\17.Höljes\Ortofoto_PAN_0_5_m_latest_tif__4285278c-bc76-4124-8214-168a49070a62_'
 
 os.chdir(workdir)
 
@@ -84,7 +84,7 @@ stname = splitparpath[1] # gets station name from split path
 # lat,lon = 59.3417, 18.0549 #stockholm
 # lat,lon = 58.3949, 13.8436 #skövde
 # lat, lon = 57.267, 16.4114 #oskarshamn
-lat, lon = 60.9066, 12.5843 #holjes
+# lat, lon = 60.9066, 12.5843 #holjes
 
 northing, easting = 650084.04312309, 6566851.5500514 
 
@@ -524,7 +524,7 @@ for key, value in clcases.items():
             axs[0].imshow(img.imread('CircleGray.jpg'))
             axs[0].axis('off') # removes ticks and border (spines)
             axs[0].set_title('Clipped')
-            axs[1].imshow(img.imread('CircleUrkle.jpg'))
+            axs[1].imshow(img.imread(r'Results/'+clnum[i]+'/CircleUrkle.jpg'))
             axs[1].axis('off') # removes ticks and border (spines)
             axs[1].set_title('Classified')
             fig.tight_layout(pad=4.0)
