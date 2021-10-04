@@ -39,8 +39,6 @@ from shapely.ops import transform
 
 swer='+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs'
 
-# add time analysis of tasks
-########### add seversl different classification ########
 # =============================================================================
 # Preparation
 
@@ -59,14 +57,14 @@ res_dir = os.path.join(script_dir, 'Results/')
 if not os.path.isdir(res_dir):
     os.makedirs(res_dir)
 
-for i in ['00','01','02','03','04','05','06','07','08','09','10',
-          'a1','a2','a3','a4','a5','a6','a7','a8']:
+for i in ['00','01','02','03','04','05','06','07','08','09','10']:
+          # ,'a1','a2','a3','a4','a5','a6','a7','a8']:
     cla_dir = os.path.join(script_dir, 'Results/'+i)
     if not os.path.isdir(cla_dir):
         os.makedirs(cla_dir)
 
-for i in ['00','01','02','03','04','05','06','07','08','09','10',
-          'a1','a2','a3','a4','a5','a6','a7','a8']:
+for i in ['00','01','02','03','04','05','06','07','08','09','10']:
+          # ,'a1','a2','a3','a4','a5','a6','a7','a8']:
     eva_dir = os.path.join(script_dir, 'Results/'+i+'/Evaluate')
     if not os.path.isdir(eva_dir):
         os.makedirs(eva_dir)
@@ -77,17 +75,6 @@ zapath=Path(dirpath)
 parentpath=zapath.parent.absolute() # gets parent path of directory
 splitparpath=os.path.split(parentpath) # splits parent path
 stname = splitparpath[1] # gets station name from split path
-
-# Södertälje Coordinates:
-# lat,lon = 59.2141, 17.6291 
-# lat,lon = 59.1785, 17.9093 #tullinge
-# lat,lon = 59.3417, 18.0549 #stockholm
-# lat,lon = 58.3949, 13.8436 #skövde
-# lat, lon = 57.267, 16.4114 #oskarshamn
-# lat, lon = 60.9066, 12.5843 #holjes
-
-northing, easting = 650084.04312309, 6566851.5500514 
-
 
 # image type
 splitpath = os.path.split(dirpath) # splits current path
@@ -215,7 +202,7 @@ out_meta.update({"driver": "GTiff", "height": out_img.shape[1],
 # saving the clipped raster to disk
 with rasterio.open(out_tif, "w", **out_meta) as dest:
     dest.write(out_img)
-    
+
 # plotting the new clipped raster
 clipped = rasterio.open(out_tif)
 show(clipped, cmap='gray')
@@ -351,23 +338,23 @@ lista[np.where((80 < lista) & (lista <= 160)) ] = 3 # I.veg
 lista[np.where((160 < lista) & (lista <= 170)) ] = 4 # L.veg
 lista[np.where( lista > 170 )] = 5 # urban'''
 
-clcombs=np.array([0,0,0]).reshape((1,3))
-for i in[70]:
-    for j in [90,130]:
-        for k in [140,180,200,240]:
-            clcombs2=np.array([i,j,k]).reshape((1,3))
-            clcombs=np.concatenate((clcombs,clcombs2), axis=0)
+# clcombs=np.array([0,0,0]).reshape((1,3))
+# for i in[70]:
+#     for j in [90,130]:
+#         for k in [140,180,200,240]:
+#             clcombs2=np.array([i,j,k]).reshape((1,3))
+#             clcombs=np.concatenate((clcombs,clcombs2), axis=0)
 
-clcombs=np.delete(clcombs,(0,0),0)
+# clcombs=np.delete(clcombs,(0,0),0)
 
-clextrakeys = ['a1','a2','a3','a4','a5','a6','a7','a8']
+# clextrakeys = ['a1','a2','a3','a4','a5','a6','a7','a8']
 
-for i in range(0,len(clcombs)):
-    clcases[clextrakeys[i]] = '''lista[np.where( lista <= 0 )] = 1 # Nan 
-lista[np.where((0 < lista) & (lista <= '''+str(clcombs[i,0])+''')) ] = 2 # H.veg
-lista[np.where(('''+str(clcombs[i,0])+''' < lista) & (lista <= '''+str(clcombs[i,1])+''')) ] = 3 # I.veg
-lista[np.where(('''+str(clcombs[i,1])+''' < lista) & (lista <= '''+str(clcombs[i,2])+''')) ] = 4 # L.veg
-lista[np.where( lista > '''+str(clcombs[i,2])+''' )] = 5 # urban'''
+# for i in range(0,len(clcombs)):
+#     clcases[clextrakeys[i]] = '''lista[np.where( lista <= 0 )] = 1 # Nan 
+# lista[np.where((0 < lista) & (lista <= '''+str(clcombs[i,0])+''')) ] = 2 # H.veg
+# lista[np.where(('''+str(clcombs[i,0])+''' < lista) & (lista <= '''+str(clcombs[i,1])+''')) ] = 3 # I.veg
+# lista[np.where(('''+str(clcombs[i,1])+''' < lista) & (lista <= '''+str(clcombs[i,2])+''')) ] = 4 # L.veg
+# lista[np.where( lista > '''+str(clcombs[i,2])+''' )] = 5 # urban'''
 
 
 clnum=[]
