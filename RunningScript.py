@@ -7,6 +7,7 @@ Created on Sun Sep 19 18:55:55 2021
 # =============================================================================
 # Importing libraries
 
+import time
 import os
 import matplotlib.image as img
 import matplotlib.pyplot as plt
@@ -38,7 +39,8 @@ from shapely.ops import transform
 
 # =============================================================================
 # =============================================================================
-# 
+# defining starting time
+start_time = time.time()
 
 # loading data
 stdata=pd.read_excel(r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\UsedStations.xlsx')
@@ -47,10 +49,22 @@ stdata=pd.read_excel(r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\UsedStation
 headdir=r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\Data_22T_23P'
 
 # getting a list of all subdirectories within the head directory
+
 subdir=[x[0] for x in os.walk(headdir)]
 
+# filtering directories with no products
+for i in range(0,len(subdir)):
+    if subdir[i].find('Evaluate') > -1:
+        subdir.remove(subdir[i])
+    if subdir[i].find('Results') > -1:
+        subdir.remove(subdir[i])
+    if subdir[i].find('Documentation') > -1:
+        subdir.remove(subdir[i])
+    if subdir[i].find('metadata') > -1:
+        subdir.remove(subdir[i])
+
 # iterating the analysis through the directories
-for i in range (0, len(subdir)):
+for i in range (131, len(subdir)):
     for j in range(0,len(stdata)):        
         if subdir[i].find(stdata.iloc[j,2]) == -1:
             print("No analysis here!")
@@ -63,5 +77,7 @@ for i in range (0, len(subdir)):
             lat, lon = stdata.iloc[j,3], stdata.iloc[j,4],# defining station's coordinates
             workdir = subdir[i]
             exec(open(r'C:\Users\KIDDO\Downloads\SU Study\Traineeship\Urban Heat Island\python\UHIEMainScript.py').read()) # execute main model
+
+print("--- %s seconds ---" % (time.time() - start_time))
 
 # =============================================================================
