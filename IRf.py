@@ -273,10 +273,10 @@ lista = np.digitize(ndvi, ndvi_class_bins) # binning the array
 
 plt.imshow(lista)
 
-lista[np.where( lista <= 0.14 )] = 4 # Nan
-lista[np.where((0.14 < lista) & (lista <= 0.27)) ] = 3 # I.veg
-lista[np.where((0.27 < lista) & (lista <= 0.36)) ] = 2 # L.veg
-lista[np.where( lista > 0.36 )] = 1 # urban'''
+# lista[np.where( lista <= 0.14 )] = 4 # Nan
+# lista[np.where((0.14 < lista) & (lista <= 0.27)) ] = 3 # I.veg
+# lista[np.where((0.27 < lista) & (lista <= 0.36)) ] = 2 # L.veg
+# lista[np.where( lista > 0.36 )] = 1 # urban'''
 
 plt.imshow(ndvi_landsat_class)
 
@@ -327,6 +327,37 @@ plt.savefig('CBar.jpg', dpi=300, bbox_inches='tight')
 # =============================================================================
 # =============================================================================
 # Circular cutting 
+# clipped
+data = clipped
+
+# removing ticks and converting the image for pillow
+fig, ax = plt.subplots(figsize=(10,10))
+image_hidden = ax.imshow(data.read()[0], cmap='gray')
+show(data, ax=ax, cmap='gray')
+plt.xticks([])
+plt.yticks([])
+plt.savefig('GrayPill.jpg', dpi=300, bbox_inches='tight')
+
+# Cropping using pillow
+cimg=Image.open('GrayPill.jpg')
+height,width = cimg.size
+lum_img = Image.new('L', [height,width] , 0)  
+draw = ImageDraw.Draw(lum_img)
+draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
+              fill = 255, outline = "white")
+img_arr =np.array(cimg)
+lum_img_arr =np.array(lum_img)
+final_img_arr = np.dstack((img_arr,lum_img_arr))
+display(Image.fromarray(final_img_arr))
+Image.fromarray(final_img_arr).save('CircleGray.png')
+
+# Convert image to remove background data (no data)
+image = Image.open('CircleGray.png').convert('RGBA')
+new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
+new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
+new_image.convert('RGB').save('CircleGray.jpg')  # Save as JPEG
+
+
 # classified
 fp = r'Classified4.tif'
 data = rasterio.open(fp)
@@ -374,5 +405,148 @@ get_concat_h(im1, im2).save('WorkingCBar.jpg')
 plt.imshow(Image.open('WorkingCBar.jpg'))
 plt.axis('off') # removes ticks and border (spines)
 plt.savefig('fullCircleCBar.jpg', dpi=300, bbox_inches='tight')
+
+# =============================================================================
+# =============================================================================
+# Evaluation graphs
+
+# creating evaluation directory
+eva_dir = os.path.join(script_dir, 'Evaluate/')
+
+if not os.path.isdir(eva_dir):
+    os.makedirs(eva_dir)
+
+# -----------------------------------------------------------------------------
+# Classification Evaluation
+
+# # Raw products
+# for i in range(0,len(tiff_fps)):
+#     fp = tiff_fps[i]
+#     data = rasterio.open(fp)
+#     fig, ax = plt.subplots(figsize=(10,10))
+#     image_hidden = ax.imshow(data.read()[0], cmap='gray')
+#     show(data, ax=ax, cmap='gray')
+#     plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+#     plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+#     plt.savefig('Raw'+str(i+1)+'.jpg', dpi=300, bbox_inches='tight')
+
+# # Mosaic
+# fp = r'Mosaic.tif'
+# data = rasterio.open(fp)
+# fig, ax = plt.subplots(figsize=(10,10))
+# image_hidden = ax.imshow(data.read()[0], cmap='gray')
+# show(data, ax=ax, cmap='gray')
+# plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+# plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+# plt.savefig('Mosaiced.jpg', dpi=300, bbox_inches='tight')
+
+# Clip
+fp = r'Clip.tif'
+data = rasterio.open(fp)
+fig, ax = plt.subplots(figsize=(10,10))
+image_hidden = ax.imshow(data.read()[0], cmap='gray')
+show(data, ax=ax, cmap='gray')
+plt.gcf().axes[0].yaxis.get_major_formatter().set_scientific(False)
+plt.gcf().axes[0].xaxis.get_major_formatter().set_scientific(False)
+plt.savefig('Clipped.png', dpi=300, bbox_inches='tight')
+
+# Evaluation figure plotting
+fig, axs = plt.subplots(1,2, figsize=(10,8))
+fig.suptitle(stname+' ('+imtype+')', y=0.85, fontsize=20)
+axs[0].imshow(img.imread('CircleGray.jpg'))
+axs[0].axis('off') # removes ticks and border (spines)
+axs[0].set_title('Clipped')
+axs[1].imshow(img.imread('CircleUrkle.jpg'))
+axs[1].axis('off') # removes ticks and border (spines)
+axs[1].set_title('Classified')
+fig.tight_layout(pad=4.0)
+plt.savefig(eva_dir+'Eva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
+
+# -----------------------------------------------------------------------------
+# Clipping Evaluation
+
+# fp = r'Mosaic.tif'; out_tif = r'Clip400.tif'
+# data = rasterio.open(fp); point = Point(lon, lat)
+# local_azimuthal_projection = f"+proj=aeqd +R=6371000 +units=m +lat_0={point.y} +lon_0={point.x}"
+# wgs84_to_aeqd = partial(pyproj.transform,
+#                         pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),
+#                         pyproj.Proj(local_azimuthal_projection),)
+# aeqd_to_wgs84 = partial(pyproj.transform,
+#                         pyproj.Proj(local_azimuthal_projection),
+#                         pyproj.Proj('+proj=longlat +datum=WGS84 +no_defs'),)
+# aeqd_to_swer = partial(pyproj.transform,
+#                        pyproj.Proj(local_azimuthal_projection),
+#                        pyproj.Proj(swer),)
+# point_transformed = transform(wgs84_to_aeqd, point)
+
+# loc_buffer = point_transformed.buffer(400)
+# buffer_wgs84 = transform(aeqd_to_swer, loc_buffer)
+# geo = gpd.GeoDataFrame({'geometry': buffer_wgs84}, index=[0], crs=from_epsg(3006))
+# coords = getFeatures(geo)
+# out_img, out_transform = mask(dataset=data, shapes=coords, crop=True)
+# out_meta = data.meta.copy()
+# print(out_meta)
+# out_meta.update({"driver": "GTiff", "height": out_img.shape[1],
+#                  "width": out_img.shape[2],"transform": out_transform,
+#                  "crs": swer})
+# with rasterio.open(out_tif, "w", **out_meta) as dest:
+#     dest.write(out_img)
+# clipped = rasterio.open(out_tif)
+# show(clipped, cmap='gray')
+
+# # classified
+# fp = r'Clip400.tif'
+# data = rasterio.open(fp)
+
+# # removing ticks and converting the image for pillow
+# fig, ax = plt.subplots(figsize=(10,10))
+# image_hidden = ax.imshow(data.read()[0], cmap='gray')
+# show(data, ax=ax, cmap='gray')
+# plt.xticks([])
+# plt.yticks([])
+# plt.savefig('Clip400.jpg', dpi=300, bbox_inches='tight')
+
+# # Cropping using pillow
+# cimg=Image.open('Clip400.jpg')
+# height,width = cimg.size
+# lum_img = Image.new('L', [height,width] , 0)  
+# draw = ImageDraw.Draw(lum_img)
+# draw.pieslice([(50,30), (height-30,width-50)], 0, 360, 
+#               fill = 255, outline = "white")
+# img_arr =np.array(cimg)
+# lum_img_arr =np.array(lum_img)
+# final_img_arr = np.dstack((img_arr,lum_img_arr))
+# display(Image.fromarray(final_img_arr))
+# Image.fromarray(final_img_arr).save('CircleClip400.png')
+
+# # convert image to remove background data (no data)
+# image = Image.open('CircleClip400.png').convert('RGBA')
+# new_image = Image.new("RGBA", image.size, "WHITE") # Create a white rgba background
+# new_image.paste(image, (0, 0), image)              # Paste the image on the background. Go to the links given below for details.
+# new_image.convert('RGB').save('CircleClip400.jpg')  # Save as JPEG
+
+# # Evaluation figure plotting
+# fig, axs = plt.subplots(1,2, figsize=(10,8))
+# fig.suptitle(stname+' ('+imtype+')', y=0.85, fontsize=20)
+# axs[0].imshow(img.imread('CircleClip400.jpg'))
+# axs[0].axis('off') # removes ticks and border (spines)
+# axs[0].set_title('Clipped 400m radius')
+# axs[1].imshow(img.imread('CircleGray.jpg'))
+# axs[1].axis('off') # removes ticks and border (spines)
+# axs[1].set_title('Clipped 100m radius')
+# fig.tight_layout(pad=4.0)
+# plt.savefig(eva_dir+'CEva_'+stname+' ('+imtype+')'+'.jpg', dpi=300, bbox_inches='tight')
+
+# =============================================================================
+# =============================================================================
+# Extracting values
+
+im = Image.open('Classified4.tif') #.convert('RGB')
+by_color = defaultdict(int)
+for pixel in im.getdata():
+    by_color[pixel] += 1 # number of pixels with 4(h.veg), 3(i.veg), 2(l.veg), 1(urban), 5(nan)
+
+pixres = pd.DataFrame(data=(by_color.items())).transpose()
+pixres.to_csv(eva_dir+stname+'_'+imtype+'_'+'_pixres.csv')
 
 # =============================================================================
